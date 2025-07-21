@@ -77,20 +77,64 @@ function needsCoverUpdate(book) {
   );
 }
 
+// Função para verificar se um livro pertence a uma coleção específica
+function belongsToCollection(book, collectionName) {
+  return book.colecao && book.colecao.includes(collectionName);
+}
+
+// Função para selecionar livros por coleção
+function selectBooksByCollection(books) {
+  const selectedBooks = [];
+
+  // Filtrar livros por coleção
+  const clubePrincipalBooks = books.filter((book) =>
+    belongsToCollection(book, "Clube Principal")
+  );
+  const vplnBooks = books.filter((book) => belongsToCollection(book, "VPLN"));
+  const opecaBooks = books.filter((book) => belongsToCollection(book, "OPECA"));
+
+  // Pegar os 3 últimos do Clube Principal
+  const latestClubePrincipal = clubePrincipalBooks.slice(-3);
+  selectedBooks.push(...latestClubePrincipal);
+
+  // Pegar o último da VPLN
+  const latestVPLN = vplnBooks.slice(-1);
+  selectedBooks.push(...latestVPLN);
+
+  // Pegar o último da OPECA
+  const latestOPECA = opecaBooks.slice(-1);
+  selectedBooks.push(...latestOPECA);
+
+  console.log("Livros selecionados por coleção:");
+  console.log(
+    `- Clube Principal (3 últimos): ${latestClubePrincipal
+      .map((b) => b.titulo)
+      .join(", ")}`
+  );
+  console.log(
+    `- VPLN (1 último): ${latestVPLN.map((b) => b.titulo).join(", ")}`
+  );
+  console.log(
+    `- OPECA (1 último): ${latestOPECA.map((b) => b.titulo).join(", ")}`
+  );
+
+  return selectedBooks;
+}
+
 // Mostrar últimos livros com capas otimizadas
 async function showLatestBooksWithCovers(books) {
-  // Pega os 5 últimos livros adicionados
-  const latest = books.slice(-5).reverse();
+  // Seleciona livros específicos por coleção
+  const selectedBooks = selectBooksByCollection(books);
 
   // Primeiro, mostra os livros com as imagens que já existem
-  displayBooks(latest);
+  displayBooks(selectedBooks);
 
   // Depois, busca e atualiza apenas as capas que precisam ser melhoradas
-  const booksNeedingCovers = latest.filter(needsCoverUpdate);
+  const booksNeedingCovers = selectedBooks.filter(needsCoverUpdate);
 
   if (booksNeedingCovers.length > 0) {
     console.log(
-      `Buscando capas para ${booksNeedingCovers.length} dos últimos livros...`
+      `Buscando capas para ${booksNeedingCovers.length} dos livros selecionados...`
     );
 
     // Busca capas em paralelo para ser mais rápido
@@ -118,19 +162,32 @@ function displayBooks(books) {
     .map(
       (book) => `
     <div class="book-card" data-book-id="${book.id}">
-      <div class="book-cover-container">
-        <img 
-          src="${book.imagem_capa || "img/default-cover.png"}" 
-          alt="Capa de ${book.titulo}"
-          loading="lazy"
-          onerror="this.onerror=null; this.src='img/default-cover.png';"
-          class="book-cover"
-        >
+      <div class="book-cover-background" style="background-image: url('${
+        book.imagem_capa || "img/default-cover.png"
+      }')">
         ${needsCoverUpdate(book) ? '<div class="loading-overlay">🔍</div>' : ""}
+        <div class="book-info-overlay">
+          <div class="book-info-content">
+            <h4 class="book-title">${book.titulo}</h4>
+            <span class="book-author">${book.autor}</span>
+            <p class="book-description">${book.descricao.substring(
+              0,
+              120
+            )}...</p>
+            <div class="book-genres">
+              ${book.genero
+                .slice(0, 2)
+                .map((genero) => `<span class="genre-tag">${genero}</span>`)
+                .join("")}
+            </div>
+            <div class="book-collection">
+              ${book.colecao
+                .map((col) => `<span class="collection-tag">${col}</span>`)
+                .join("")}
+            </div>
+          </div>
+        </div>
       </div>
-      <h4>${book.titulo}</h4>
-      <span>${book.autor}</span>
-      <p>${book.descricao.substring(0, 100)}...</p>
     </div>
   `
     )
@@ -141,11 +198,11 @@ function displayBooks(books) {
 function updateBookCover(bookId, newCoverUrl) {
   const bookCard = document.querySelector(`[data-book-id="${bookId}"]`);
   if (bookCard) {
-    const img = bookCard.querySelector(".book-cover");
+    const coverBackground = bookCard.querySelector(".book-cover-background");
     const loadingOverlay = bookCard.querySelector(".loading-overlay");
 
-    if (img) {
-      img.src = newCoverUrl;
+    if (coverBackground) {
+      coverBackground.style.backgroundImage = `url('${newCoverUrl}')`;
     }
     if (loadingOverlay) {
       loadingOverlay.remove();
