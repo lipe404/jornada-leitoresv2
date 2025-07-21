@@ -6,6 +6,14 @@
     <meta name="viewport" content="width=device-width,initial-scale=1.0" />
     <link rel="stylesheet" href="css/index.css" />
     <link rel="stylesheet" href="css/quiz.css" />
+    <!-- Link para Font Awesome para ícones (opcional, para WhatsApp) -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"
+      integrity="sha512-Fo3rlrZj/k7ujwibGWEr4XzL6o+C5sFfA+4Fp8F1o2R3g/zQ5T8zK3Bq/W+4vR3O3n2B9/P2W05hL3vB1wN2g=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
   </head>
   <body>
     <aside class="sidebar">
@@ -14,44 +22,78 @@
         <ul>
           <li><a href="index.html">Início</a></li>
           <li><a href="map.html">Mapa</a></li>
-          <li><a href="timeline.html" class="active">Linha do Tempo</a></li>
+          <li><a href="timeline.html">Linha do Tempo</a></li>
           <li><a href="search.html">Buscar</a></li>
-          <li><a href="quiz.html">Quiz</a></li>
+          <li><a href="quiz.html" class="active">Quiz</a></li>
         </ul>
       </nav>
     </aside>
     <main>
       <header>
-        <h1>Quiz Literário</h1>
+        <h1>📚 Quiz Literário 🧠</h1>
         <p>Teste seus conhecimentos sobre livros, autores e histórias!</p>
       </header>
-      <section id="quiz-config">
-        <label for="dificuldade">Dificuldade:</label>
-        <select id="dificuldade">
-          <option value="facil">Fácil</option>
-          <option value="medio">Médio</option>
-          <option value="dificil">Difícil</option>
-        </select>
-        <label for="origem">Origem das perguntas:</label>
-        <select id="origem">
-          <option value="books">Livros do clube</option>
-          <option value="api">Quiz público</option>
-        </select>
-        <button id="iniciar-quiz">Iniciar Quiz</button>
+
+      <!-- Seção de Configuração -->
+      <section id="quiz-config" class="quiz-section config-section">
+        <div class="config-item">
+          <label for="dificuldade">Dificuldade:</label>
+          <select id="dificuldade">
+            <option value="facil">Fácil</option>
+            <option value="medium">Médio</option>
+            <option value="hard">Difícil</option>
+          </select>
+        </div>
+        <div class="config-item">
+          <label for="origem">Origem das perguntas:</label>
+          <select id="origem">
+            <option value="books">Livros do clube</option>
+            <option value="api">Quiz público (API)</option>
+          </select>
+        </div>
+        <button id="iniciar-quiz" class="main-button">Iniciar Quiz</button>
       </section>
-      <section id="quiz-area" style="display: none">
-        <div id="quiz-pergunta"></div>
-        <div id="quiz-respostas"></div>
-        <button id="quiz-next" style="display: none">Próxima Pergunta</button>
-        <div id="quiz-feedback"></div>
+
+      <!-- Seção do Quiz -->
+      <section id="quiz-area" class="quiz-section" style="display: none">
+        <div class="loading-overlay" style="display: none">
+          <div class="spinner"></div>
+          <p>Carregando perguntas...</p>
+        </div>
+        <div class="question-counter">
+          Pergunta <span id="currentQuestionNumber"></span> de
+          <span id="totalQuestionsNumber"></span>
+        </div>
+        <h3 id="quiz-pergunta" class="quiz-question"></h3>
+        <div id="quiz-respostas" class="quiz-answers"></div>
+        <div id="quiz-feedback" class="quiz-feedback"></div>
+        <button
+          id="quiz-next"
+          class="main-button next-button"
+          style="display: none"
+        >
+          Próxima Pergunta
+        </button>
       </section>
-      <section id="quiz-fim" style="display: none">
-        <h2>Resultado</h2>
-        <div id="quiz-resultado"></div>
-        <button id="quiz-reiniciar">Reiniciar Quiz</button>
+
+      <!-- Seção de Fim do Quiz -->
+      <section
+        id="quiz-fim"
+        class="quiz-section result-section"
+        style="display: none"
+      >
+        <h2>🎉 Resultado do Quiz ��</h2>
+        <div id="quiz-resultado" class="quiz-summary"></div>
+        <button id="quiz-reiniciar" class="main-button restart-button">
+          Reiniciar Quiz
+        </button>
+        <button id="share-whatsapp" class="whatsapp-button">
+          <i class="fab fa-whatsapp"></i> Compartilhar no WhatsApp
+        </button>
       </section>
     </main>
     <script src="js/quiz.js"></script>
-    <script src="js/index.js"></script>
+    <!-- O script index.js deve ser carregado antes ou não ser relevante para o quiz -->
+    <!-- <script src="js/index.js"></script> -->
   </body>
 </html>

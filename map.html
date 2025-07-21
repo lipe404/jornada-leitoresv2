@@ -8,6 +8,15 @@
     <link rel="stylesheet" href="css/map.css" />
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet MarkerCluster CSS -->
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"
+    />
   </head>
   <body>
     <aside class="sidebar">
@@ -15,25 +24,118 @@
       <nav>
         <ul>
           <li><a href="index.html">Início</a></li>
-          <li><a href="map.html">Mapa</a></li>
-          <li><a href="timeline.html" class="active">Linha do Tempo</a></li>
+          <li><a href="map.html" class="active">Mapa</a></li>
+          <li><a href="timeline.html">Linha do Tempo</a></li>
           <li><a href="search.html">Buscar</a></li>
           <li><a href="quiz.html">Quiz</a></li>
         </ul>
       </nav>
     </aside>
+
     <main>
-      <header>
-        <h1>Panorama Geográfico Literário</h1>
-        <p>
-          Explore um mapa interativo dos livros lidos, localizados pelo mundo.
-        </p>
+      <header class="map-header">
+        <div class="header-content">
+          <h1>🗺️ Mapa Literário Mundial</h1>
+          <p>
+            Explore a geografia da literatura através dos locais onde se passam
+            as grandes obras
+          </p>
+        </div>
+
+        <div class="map-controls">
+          <div class="search-location">
+            <input
+              type="text"
+              id="locationSearch"
+              placeholder="Buscar por cidade ou país..."
+            />
+            <button id="searchBtn">🔍</button>
+          </div>
+
+          <div class="filter-controls">
+            <select id="collectionFilter">
+              <option value="">Todas as Coleções</option>
+              <option value="Clube Principal">Clube Principal</option>
+              <option value="VPLN">VPLN</option>
+              <option value="OPECA">OPECA</option>
+            </select>
+
+            <select id="genreFilter">
+              <option value="">Todos os Gêneros</option>
+            </select>
+
+            <button id="resetFilters">Limpar Filtros</button>
+          </div>
+        </div>
+
+        <div class="map-stats">
+          <div class="stat-item">
+            <span class="stat-number" id="totalBooks">0</span>
+            <span class="stat-label">Livros Mapeados</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" id="totalCountries">0</span>
+            <span class="stat-label">Países</span>
+          </div>
+          <div class="stat-item">
+            <span class="stat-number" id="visibleBooks">0</span>
+            <span class="stat-label">Visíveis</span>
+          </div>
+        </div>
       </header>
+
       <div id="map-literario"></div>
+
+      <!-- Loading Overlay -->
+      <div id="mapLoading" class="map-loading">
+        <div class="loading-content">
+          <div class="loading-spinner"></div>
+          <p>Carregando localizações literárias...</p>
+        </div>
+      </div>
     </main>
+
+    <!-- Modal do Livro -->
+    <div id="bookModal" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modalTitle"></h2>
+          <button class="close-btn">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="book-info">
+            <img id="modalCover" src="" alt="Capa do livro" />
+            <div class="book-details">
+              <p class="book-author">
+                <strong>Autor:</strong> <span id="modalAuthor"></span>
+              </p>
+              <p class="book-year">
+                <strong>Ano:</strong> <span id="modalYear"></span>
+              </p>
+              <p class="book-location">
+                <strong>Local:</strong> <span id="modalLocation"></span>
+              </p>
+              <p class="book-genre">
+                <strong>Gêneros:</strong> <span id="modalGenre"></span>
+              </p>
+              <p class="book-movement">
+                <strong>Corrente:</strong> <span id="modalMovement"></span>
+              </p>
+              <div class="book-collections" id="modalCollections"></div>
+            </div>
+          </div>
+          <div class="book-description">
+            <h3>Sinopse</h3>
+            <p id="modalDescription"></p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Leaflet MarkerCluster JS -->
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
     <script src="js/map.js"></script>
-    <script src="js/index.js"></script>
   </body>
 </html>
