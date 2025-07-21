@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Leitores Inoxidáveis | Linha do Tempo</title>
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/timeline.css" />
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <h2>Leitores Inoxidáveis</h2>
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="map.html">Mapa</a></li>
+          <li><a href="timeline.html" class="active">Linha do Tempo</a></li>
+          <li><a href="search.html">Buscar</a></li>
+          <li><a href="quiz.html">Quiz</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <main>
+      <section class="timeline-section">
+        <h1>Linha do Tempo Literária</h1>
+        <div id="timeline">
+          <!-- Linhas são carregadas pelo JS -->
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal: Livro aberto -->
+    <div id="bookModal" class="modal">
+      <div class="modal-bg"></div>
+      <div class="book-animation">
+        <button class="close-btn" title="Fechar">&times;</button>
+        <div class="book-content-left">
+          <img id="modalCover" alt="Capa do livro" />
+        </div>
+        <div class="book-content-right">
+          <h2 id="modalTitle"></h2>
+          <h3 id="modalAuthor"></h3>
+          <p id="modalGenre"></p>
+          <p id="modalCorrente"></p>
+          <div id="modalDesc"></div>
+        </div>
+      </div>
+    </div>
+
+    <script src="js/index.js"></script>
+    <script src="js/timeline.js"></script>
+  </body>
+</html>

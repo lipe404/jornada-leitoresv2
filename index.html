@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Leitores Inoxidáveis</title>
+    <link rel="stylesheet" href="css/index.css" />
+  </head>
+  <body>
+    <!-- Menu Lateral -->
+    <aside class="sidebar">
+      <h2>Leitores Inoxidáveis</h2>
+      <nav>
+        <ul>
+          <li><a href="index.html" class="active">Início</a></li>
+          <li><a href="map.html">Mapa</a></li>
+          <li><a href="timeline.html">Linha do Tempo</a></li>
+          <li><a href="search.html">Busca</a></li>
+          <li><a href="quiz.html">Quiz</a></li>
+        </ul>
+      </nav>
+    </aside>
+
+    <!-- Conteúdo Principal -->
+    <main class="main-content">
+      <section class="welcome">
+        <h1>
+          Bem-vindo ao Clube de Leitura <span>Leitores Inoxidáveis</span>!
+        </h1>
+        <p>
+          Um espaço para compartilhar experiências sobre literatura, debater
+          grandes obras e celebrar a leitura coletiva.
+        </p>
+      </section>
+
+      <!-- Cards de estatíticas dos livros -->
+      <section id="stats-cards">
+        <!-- Estatísticas básicas dos livros: quantidade, gêneros, autores, etc. -->
+      </section>
+
+      <!-- Atalhos -->
+      <section class="shortcuts">
+        <div class="card">
+          <a href="map.html"
+            ><img src="img/mapa.svg" alt="Mapa" /><span
+              >Mapa dos Livros</span
+            ></a
+          >
+        </div>
+        <div class="card">
+          <a href="timeline.html"
+            ><img src="img/timeline.svg" alt="Linha do Tempo" /><span
+              >Linha do Tempo</span
+            ></a
+          >
+        </div>
+        <div class="card">
+          <a href="search.html"
+            ><img src="img/search.svg" alt="Busca" /><span
+              >Buscar Livros</span
+            ></a
+          >
+        </div>
+        <div class="card">
+          <a href="quiz.html"
+            ><img src="img/quiz.svg" alt="Quiz" /><span>Quiz Literário</span></a
+          >
+        </div>
+      </section>
+
+      <section class="featured-books">
+        <h2>Últimos Livros Lidos</h2>
+        <div id="book-list"></div>
+      </section>
+    </main>
+
+    <script src="js/index.js"></script>
+  </body>
+</html>

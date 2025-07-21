@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Leitores Inoxidáveis • Mapa Literário</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/map.css" />
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <h2>Leitores Inoxidáveis</h2>
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="map.html">Mapa</a></li>
+          <li><a href="timeline.html" class="active">Linha do Tempo</a></li>
+          <li><a href="search.html">Buscar</a></li>
+          <li><a href="quiz.html">Quiz</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <main>
+      <header>
+        <h1>Panorama Geográfico Literário</h1>
+        <p>
+          Explore um mapa interativo dos livros lidos, localizados pelo mundo.
+        </p>
+      </header>
+      <div id="map-literario"></div>
+    </main>
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="js/map.js"></script>
+    <script src="js/index.js"></script>
+  </body>
+</html>

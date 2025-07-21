@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Leitores Inoxidáveis • Quiz Literário</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/quiz.css" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <h2>Leitores Inoxidáveis</h2>
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="map.html">Mapa</a></li>
+          <li><a href="timeline.html" class="active">Linha do Tempo</a></li>
+          <li><a href="search.html">Buscar</a></li>
+          <li><a href="quiz.html">Quiz</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <main>
+      <header>
+        <h1>Quiz Literário</h1>
+        <p>Teste seus conhecimentos sobre livros, autores e histórias!</p>
+      </header>
+      <section id="quiz-config">
+        <label for="dificuldade">Dificuldade:</label>
+        <select id="dificuldade">
+          <option value="facil">Fácil</option>
+          <option value="medio">Médio</option>
+          <option value="dificil">Difícil</option>
+        </select>
+        <label for="origem">Origem das perguntas:</label>
+        <select id="origem">
+          <option value="books">Livros do clube</option>
+          <option value="api">Quiz público</option>
+        </select>
+        <button id="iniciar-quiz">Iniciar Quiz</button>
+      </section>
+      <section id="quiz-area" style="display: none">
+        <div id="quiz-pergunta"></div>
+        <div id="quiz-respostas"></div>
+        <button id="quiz-next" style="display: none">Próxima Pergunta</button>
+        <div id="quiz-feedback"></div>
+      </section>
+      <section id="quiz-fim" style="display: none">
+        <h2>Resultado</h2>
+        <div id="quiz-resultado"></div>
+        <button id="quiz-reiniciar">Reiniciar Quiz</button>
+      </section>
+    </main>
+    <script src="js/quiz.js"></script>
+    <script src="js/index.js"></script>
+  </body>
+</html>

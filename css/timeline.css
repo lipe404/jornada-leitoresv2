@@ -1,0 +1,270 @@
+main {
+  margin-left: 260px;
+  padding: 40px 32px;
+  background: #fcf8ef;
+  min-height: 100vh;
+}
+.timeline-section {
+  max-width: 1000px;
+  margin: 0 auto;
+  position: relative;
+}
+.timeline-section h1 {
+  text-align: center;
+  margin-bottom: 32px;
+  color: #835600;
+  font-family: "Georgia", serif;
+  font-size: 2rem;
+  letter-spacing: 1px;
+}
+
+/* Timeline - cronologia estilo pergaminho */
+#timeline {
+  position: relative;
+  margin: 0 auto;
+  padding-left: 45px;
+  border-left: 6px solid #cba755;
+  background: repeating-linear-gradient(
+    to bottom,
+    #f9e7ba 0px,
+    #eee2c2 35px,
+    #f8e9cd 45px
+  );
+  box-shadow: 0 3px 24px rgba(139, 110, 45, 0.05);
+  border-radius: 20px 0 20px 0;
+  min-height: 300px;
+}
+.timeline-event {
+  display: flex;
+  align-items: center;
+  position: relative;
+  margin-bottom: 48px;
+  opacity: 0;
+  transform: translateY(80px);
+  animation: scrollIn 1s forwards;
+}
+.timeline-event.visible {
+  opacity: 1;
+  transform: none;
+}
+.timeline-event .dot {
+  position: absolute;
+  left: -25px;
+  top: 16px;
+  width: 22px;
+  height: 22px;
+  background: #f6bd3b;
+  border: 3px solid #cba755;
+  border-radius: 50%;
+  box-shadow: 0 0 8px #f6bd3b70;
+  z-index: 2;
+}
+.timeline-event .year {
+  font-family: "Georgia", serif;
+  font-size: 1.12rem;
+  color: #835600;
+  margin-right: 32px;
+  margin-left: 7px;
+  min-width: 68px;
+  text-align: right;
+}
+.timeline-event .event-card {
+  background: #fffdf3;
+  border-radius: 14px;
+  box-shadow: 0 1px 12px rgba(139, 110, 45, 0.08);
+  padding: 18px 22px;
+  display: flex;
+  align-items: flex-start;
+  cursor: pointer;
+  transition: box-shadow 0.2s, transform 0.2s;
+  border: 2px solid #edd388;
+}
+.timeline-event .event-card:hover {
+  box-shadow: 0 6px 36px #f6bd3b33;
+  transform: scale(1.04) translateY(-3px);
+}
+.event-cover {
+  width: 58px;
+  height: 82px;
+  object-fit: cover;
+  border-radius: 6px;
+  box-shadow: 0 1px 6px #cba75555;
+  margin-right: 16px;
+  border: 1.5px solid #efc466;
+  background: #eee;
+}
+.event-info {
+  flex: 1;
+}
+.event-title {
+  font-weight: 700;
+  color: #935f0c;
+  font-size: 1.05rem;
+  margin-bottom: 3px;
+}
+.event-author {
+  color: #473f28;
+  font-size: 0.95rem;
+  margin-bottom: 1px;
+}
+.event-corrente {
+  color: #a28857;
+  font-size: 0.89rem;
+}
+
+@keyframes scrollIn {
+  from {
+    opacity: 0;
+    transform: translateY(80px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* MODAL - livro aberto animado */
+.modal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(55, 40, 20, 0.36);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+.modal.open {
+  display: flex;
+  animation: modalBgIn 0.6s;
+}
+@keyframes modalBgIn {
+  from {
+    background: rgba(55, 40, 20, 0);
+  }
+  to {
+    background: rgba(55, 40, 20, 0.36);
+  }
+}
+.modal-bg {
+  position: absolute;
+  inset: 0;
+}
+.book-animation {
+  position: relative;
+  display: flex;
+  background: #f5f0e3;
+  border-radius: 10px;
+  box-shadow: 0 6px 48px #cba75588;
+  min-width: 430px;
+  min-height: 290px;
+  max-width: 90vw;
+  max-height: 82vh;
+  padding: 34px 16px 28px 18px;
+  z-index: 1;
+  /* Animation effect: book opening */
+  transform: scaleX(0.1) rotateY(70deg);
+  opacity: 0;
+  animation: bookOpen 0.7s cubic-bezier(0.32, 1.2, 0.18, 0.98) forwards;
+}
+@keyframes bookOpen {
+  0% {
+    transform: scaleX(0.1) rotateY(70deg);
+    opacity: 0;
+  }
+  65% {
+    transform: scaleX(1.1) rotateY(-6deg);
+    opacity: 1;
+  }
+  100% {
+    transform: scaleX(1) rotateY(0);
+    opacity: 1;
+  }
+}
+.close-btn {
+  position: absolute;
+  right: 16px;
+  top: 12px;
+  border: none;
+  background: transparent;
+  font-size: 2.1em;
+  color: #bc9645;
+  cursor: pointer;
+  z-index: 2;
+  text-shadow: 1px 1px 4px #fff7;
+  line-height: 1;
+}
+.book-content-left {
+  padding: 14px 8px 12px 0;
+  border-right: 2.4px dashed #d2ad74;
+  display: flex;
+  align-items: center;
+}
+#modalCover {
+  width: 104px;
+  height: 148px;
+  border-radius: 7px;
+  border: 2px solid #ecd18c;
+  box-shadow: 0 3px 18px #cba75555;
+}
+.book-content-right {
+  flex: 1;
+  padding-left: 28px;
+  display: flex;
+  flex-direction: column;
+}
+#modalTitle {
+  margin: 4px 0 0 0;
+  color: #ad740b;
+  font-size: 1.3em;
+  font-family: "Georgia", serif;
+}
+#modalAuthor,
+#modalGenre,
+#modalCorrente {
+  font-size: 0.98em;
+  color: #664700;
+  margin: 3px 0 2px 0;
+}
+#modalDesc {
+  margin-top: 13px;
+  font-size: 0.98em;
+  color: #2b1c03;
+}
+
+/* Responsivo */
+@media (max-width: 700px) {
+  main {
+    margin-left: 0;
+    padding: 14px 3vw;
+  }
+  .timeline-section h1 {
+    font-size: 1.17rem;
+  }
+  #timeline {
+    padding-left: 22px;
+  }
+  .timeline-event .year {
+    margin-right: 12px;
+    min-width: 45px;
+    font-size: 0.97rem;
+  }
+  .book-animation {
+    flex-direction: column;
+    min-width: 80vw;
+    min-height: unset;
+    padding: 18px 3vw;
+  }
+  .book-content-left {
+    border-right: none;
+    border-bottom: 1.6px dashed #d2ad74;
+    padding: 0 0 17px 0;
+  }
+  #modalCover {
+    width: 84px;
+    height: 120px;
+  }
+  .book-content-right {
+    padding-left: 0;
+  }
+}

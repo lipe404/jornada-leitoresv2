@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Leitores Inoxidáveis | Buscar Livros</title>
+    <link rel="stylesheet" href="css/index.css" />
+    <link rel="stylesheet" href="css/search.css" />
+    <link rel="icon" type="image/png" href="img/favicon.png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <aside class="sidebar">
+      <h2>Leitores Inoxidáveis</h2>
+      <nav>
+        <ul>
+          <li><a href="index.html">Início</a></li>
+          <li><a href="map.html">Mapa</a></li>
+          <li><a href="timeline.html">Linha do Tempo</a></li>
+          <li><a href="search.html" class="active">Buscar</a></li>
+          <li><a href="quiz.html">Quiz</a></li>
+        </ul>
+      </nav>
+    </aside>
+    <main>
+      <section class="search-container">
+        <h1>Buscar Livros</h1>
+        <form id="searchForm">
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Digite título, autor, gênero ou corrente literária..."
+            autocomplete="off"
+          />
+          <button type="submit">Buscar</button>
+        </form>
+        <div id="searchResults"></div>
+      </section>
+    </main>
+    <script src="js/index.js"></script>
+    <script src="js/search.js"></script>
+  </body>
+</html>

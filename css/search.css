@@ -1,0 +1,117 @@
+main {
+  margin-left: 260px;
+  padding: 40px 32px;
+  background: #f6f9fa;
+  min-height: 100vh;
+}
+
+.search-container {
+  max-width: 900px;
+  margin: 0 auto;
+}
+
+.search-container h1 {
+  margin-bottom: 32px;
+  font-size: 2rem;
+  color: #365672;
+  letter-spacing: 1px;
+}
+
+#searchForm {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 32px;
+}
+
+#searchInput {
+  flex: 1;
+  padding: 12px 18px;
+  font-size: 1rem;
+  border: 1px solid #bfd1e2;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#searchInput:focus {
+  border-color: #4a8cff;
+}
+
+#searchForm button {
+  padding: 12px 26px;
+  background: #4a8cff;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#searchForm button:hover {
+  background: #223366;
+}
+
+#searchResults {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 32px;
+}
+
+.book-card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 20px rgba(54, 86, 114, 0.1);
+  padding: 24px 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  transition: box-shadow 0.2s;
+}
+
+.book-card:hover {
+  box-shadow: 0 8px 32px rgba(54, 86, 114, 0.16);
+}
+
+.book-cover {
+  width: 100%;
+  max-width: 108px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  align-self: center;
+}
+
+.book-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #26344a;
+  margin-bottom: 8px;
+}
+
+.book-author,
+.book-genre,
+.book-corrente {
+  font-size: 0.98rem;
+  color: #506084;
+  margin-bottom: 4px;
+}
+
+.book-desc {
+  margin-top: 12px;
+  font-size: 0.97rem;
+  color: #235;
+}
+
+/* Smartphone responsivo */
+@media (max-width: 780px) {
+  main {
+    margin-left: 0;
+    padding: 16px 4vw;
+  }
+  .search-container {
+    padding-top: 20px;
+  }
+  #searchResults {
+    gap: 16px;
+  }
+}
