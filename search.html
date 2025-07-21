@@ -21,22 +21,86 @@
         </ul>
       </nav>
     </aside>
+
     <main>
       <section class="search-container">
         <h1>Buscar Livros</h1>
-        <form id="searchForm">
-          <input
-            type="text"
-            id="searchInput"
-            placeholder="Digite título, autor, gênero ou corrente literária..."
-            autocomplete="off"
-          />
-          <button type="submit">Buscar</button>
-        </form>
-        <div id="searchResults"></div>
+
+        <div class="search-controls">
+          <form id="searchForm">
+            <div class="search-input-container">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Digite título, autor, gênero ou corrente literária..."
+                autocomplete="off"
+              />
+              <button type="submit" class="search-btn">Buscar</button>
+            </div>
+          </form>
+
+          <div class="search-options">
+            <label class="search-option">
+              <input type="radio" name="searchSource" value="local" checked />
+              <span class="option-text">Nossa Biblioteca</span>
+            </label>
+            <label class="search-option">
+              <input type="radio" name="searchSource" value="api" />
+              <span class="option-text">Biblioteca Pública</span>
+            </label>
+          </div>
+        </div>
+
+        <div class="results-info">
+          <span id="resultsCount"></span>
+          <button id="loadMoreBtn" class="load-more-btn" style="display: none">
+            Ver mais livros
+          </button>
+        </div>
+
+        <div id="searchResults" class="search-results"></div>
       </section>
     </main>
-    <script src="js/index.js"></script>
+
+    <!-- Modal do Livro -->
+    <div id="bookModal" class="modal">
+      <div class="modal-content">
+        <div class="book-pages">
+          <div class="book-page left-page">
+            <button class="close-btn">&times;</button>
+            <div class="book-cover-modal">
+              <img id="modalBookCover" src="" alt="Capa do livro" />
+            </div>
+          </div>
+          <div class="book-page right-page">
+            <div class="book-details">
+              <h2 id="modalBookTitle"></h2>
+              <p class="book-author">
+                <strong>Autor:</strong> <span id="modalBookAuthor"></span>
+              </p>
+              <p class="book-year">
+                <strong>Ano:</strong> <span id="modalBookYear"></span>
+              </p>
+              <p class="book-country">
+                <strong>País:</strong> <span id="modalBookCountry"></span>
+              </p>
+              <p class="book-genre">
+                <strong>Gêneros:</strong> <span id="modalBookGenre"></span>
+              </p>
+              <p class="book-movement">
+                <strong>Corrente:</strong> <span id="modalBookMovement"></span>
+              </p>
+              <div class="book-collections" id="modalBookCollections"></div>
+              <div class="book-description">
+                <h3>Sinopse</h3>
+                <p id="modalBookDescription"></p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <script src="js/search.js"></script>
   </body>
 </html>
