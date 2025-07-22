@@ -17,6 +17,7 @@
       rel="stylesheet"
       href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css"
     />
+    <link rel="icon" href="img/favicon/favicon.ico" type="image/x-icon" />
   </head>
   <body>
     <!-- Botão do Menu Hambúrguer -->
@@ -33,7 +34,11 @@
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <h2>Leitores Inoxidáveis</h2>
-        <button class="sidebar-close" id="sidebarClose" aria-label="Fechar Menu">
+        <button
+          class="sidebar-close"
+          id="sidebarClose"
+          aria-label="Fechar Menu"
+        >
           ×
         </button>
       </div>
@@ -51,7 +56,7 @@
     <main>
       <header class="map-header">
         <div class="header-content">
-          <h1>🗺️ Mapa Literário Mundial</h1>
+          <h1>Atlas Literário</h1>
           <p>
             Explore a geografia da literatura através dos locais onde se passam
             as grandes obras
@@ -78,6 +83,12 @@
 
             <select id="genreFilter">
               <option value="">Todos os Gêneros</option>
+              <!-- Preenchido dinamicamente -->
+            </select>
+
+            <select id="countryFilter">
+              <option value="">Todos os Países</option>
+              <!-- Preenchido dinamicamente -->
             </select>
 
             <button id="resetFilters">Limpar Filtros</button>
@@ -87,15 +98,11 @@
         <div class="map-stats">
           <div class="stat-item">
             <span class="stat-number" id="totalBooks">0</span>
-            <span class="stat-label">Livros Mapeados</span>
+            <span class="stat-label">Livros</span>
           </div>
           <div class="stat-item">
             <span class="stat-number" id="totalCountries">0</span>
             <span class="stat-label">Países</span>
-          </div>
-          <div class="stat-item">
-            <span class="stat-number" id="visibleBooks">0</span>
-            <span class="stat-label">Visíveis</span>
           </div>
         </div>
       </header>
@@ -153,5 +160,6 @@
     <!-- Leaflet MarkerCluster JS -->
     <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
     <script src="js/map.js"></script>
+    <script src="js/index.js"></script>
   </body>
 </html>

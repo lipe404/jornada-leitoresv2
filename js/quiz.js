@@ -1,434 +1,1081 @@
-// --- CONFIGURAÇÃO ---
-const TOTAL_QUESTIONS = 10; // Número fixo de perguntas
-const OPEN_TRIVIA_API_BASE =
-  "https://opentdb.com/api.php?amount=10&type=multiple&encode=base64"; // Always fetch 10
-const TRANSLATION_SERVICE_URL = "https://api.mymemory.translated.net/get?q="; // Free API (limited, for demo)
-const TRANSLATION_MAP = {
-  // Mapeamento manual para termos comuns da API que podem não ser bem traduzidos ou para demonstrar.
-  // Em uma aplicação real, você usaria um serviço de tradução robusto.
-  "Entertainment: Books": "Entretenimento: Livros",
-  "Science & Nature": "Ciência & Natureza",
-  "General Knowledge": "Conhecimentos Gerais",
-  Mythology: "Mitologia",
-  History: "História",
-  Geography: "Geografia",
-  Politics: "Política",
-  Art: "Arte",
-  Celebrities: "Celebridades",
-  Animals: "Animais",
-  Vehicles: "Veículos",
-  Comics: "Quadrinhos",
-  Computers: "Computadores",
-  Mathematics: "Matemática",
-  correct: "correta",
-  incorrect: "incorreta",
-  true: "verdadeiro",
-  false: "falso",
-  // Adicione mais termos conforme necessário
+// ===== CONFIGURAÇÕES =====
+const CONFIG = {
+  TOTAL_QUESTIONS: 10,
+  BATCH_SIZE: 5,
+  TRANSLATION_DELAY: 100,
+  API_TIMEOUT: 10000,
+  RETRY_ATTEMPTS: 3,
 };
 
-// --- UTILITÁRIOS ---
+// APIs e Serviços
+const APIS = {
+  TRIVIA: "https://opentdb.com/api.php",
+  TRANSLATION: "https://api.mymemory.translated.net/get",
+  BACKUP_TRANSLATION: "https://translate.googleapis.com/translate_a/single",
+};
 
-// Embaralha um array
-function shuffle(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+// ===== SISTEMA DE TRADUÇÃO APRIMORADO =====
+class TranslationService {
+  constructor() {
+    this.cache = new Map();
+    this.translationMap = {
+      // Categorias
+      "Entertainment: Books": "Entretenimento: Livros",
+      "Science & Nature": "Ciência & Natureza",
+      "General Knowledge": "Conhecimentos Gerais",
+      Mythology: "Mitologia",
+      History: "História",
+      Geography: "Geografia",
+      Politics: "Política",
+      Art: "Arte",
+      Celebrities: "Celebridades",
+      Animals: "Animais",
+      Comics: "Quadrinhos",
+      Sports: "Esportes",
+      Film: "Cinema",
+      Music: "Música",
+      Television: "Televisão",
+      "Video Games": "Videogames",
+      "Board Games": "Jogos de Tabuleiro",
+
+      // Respostas comuns
+      True: "Verdadeiro",
+      False: "Falso",
+      correct: "correta",
+      incorrect: "incorreta",
+      true: "verdadeiro",
+      false: "falso",
+      yes: "sim",
+      no: "não",
+
+      // Palavras comuns em perguntas
+      What: "Qual",
+      Who: "Quem",
+      When: "Quando",
+      Where: "Onde",
+      Why: "Por que",
+      How: "Como",
+      Which: "Qual",
+      author: "autor",
+      book: "livro",
+      novel: "romance",
+      character: "personagem",
+      story: "história",
+      published: "publicado",
+      written: "escrito",
+      wrote: "escreveu",
+      created: "criou",
+      year: "ano",
+      century: "século",
+    };
   }
-  return array;
-}
 
-// Função para simular ou tentar traduzir texto
-async function translateText(text) {
-  // Tenta traduzir usando o mapa manual primeiro
-  const mapped = TRANSLATION_MAP[text];
-  if (mapped) return mapped;
+  // Tradução com cache e múltiplas estratégias
+  async translate(text) {
+    if (!text || typeof text !== "string") return text;
 
-  // Se não estiver no mapa, tenta uma API de tradução (gratuita e limitada)
-  // ESTA API É GRATUITA E PODE TER LIMITES DE USO/QUALIDADE.
-  // PARA PRODUÇÃO, CONSIDERE UMA SOLUÇÃO MAIS ROBUSTA.
-  try {
-    const response = await fetch(
-      `${TRANSLATION_SERVICE_URL}${encodeURIComponent(text)}&langpair=en|pt-br`
-    );
+    // Verificar cache primeiro
+    if (this.cache.has(text)) {
+      return this.cache.get(text);
+    }
+
+    // Verificar mapa manual
+    const manualTranslation = this.translationMap[text];
+    if (manualTranslation) {
+      this.cache.set(text, manualTranslation);
+      return manualTranslation;
+    }
+
+    // Tradução inteligente por partes
+    const intelligentTranslation = this.intelligentTranslate(text);
+    if (intelligentTranslation !== text) {
+      this.cache.set(text, intelligentTranslation);
+      return intelligentTranslation;
+    }
+
+    // Tentar APIs de tradução
+    try {
+      const apiTranslation = await this.translateViaAPI(text);
+      if (apiTranslation && apiTranslation !== text) {
+        this.cache.set(text, apiTranslation);
+        return apiTranslation;
+      }
+    } catch (error) {
+      console.warn("Erro na tradução via API:", error);
+    }
+
+    // Retornar original se nada funcionou
+    this.cache.set(text, text);
+    return text;
+  }
+
+  // Tradução inteligente baseada em padrões
+  intelligentTranslate(text) {
+    let translated = text;
+
+    // Substituições de palavras conhecidas
+    Object.entries(this.translationMap).forEach(([en, pt]) => {
+      const regex = new RegExp(`\b${en}\b`, "gi");
+      translated = translated.replace(regex, pt);
+    });
+
+    // Padrões específicos para perguntas de quiz
+    const patterns = [
+      {
+        pattern: /Who (?:is|was) the author of "([^"]+)"\?/gi,
+        replacement: 'Quem é o autor de "$1"?',
+      },
+      {
+        pattern:
+          /What (?:is|was) the (?:title of the )?book (?:written )?by ([^?]+)\?/gi,
+        replacement: "Qual é o livro escrito por $1?",
+      },
+      {
+        pattern: /In which year was "([^"]+)" published\?/gi,
+        replacement: 'Em que ano foi publicado "$1"?',
+      },
+      {
+        pattern:
+          /Which (?:of these )?(?:books?|novels?) was written by ([^?]+)\?/gi,
+        replacement: "Qual destes livros foi escrito por $1?",
+      },
+    ];
+
+    patterns.forEach(({ pattern, replacement }) => {
+      translated = translated.replace(pattern, replacement);
+    });
+
+    return translated;
+  }
+
+  // Tradução via API com fallback
+  async translateViaAPI(text) {
+    const attempts = [
+      () => this.translateMyMemory(text),
+      () => this.translateSimple(text),
+    ];
+
+    for (const attempt of attempts) {
+      try {
+        const result = await Promise.race([
+          attempt(),
+          new Promise((_, reject) =>
+            setTimeout(() => reject(new Error("Timeout")), 3000)
+          ),
+        ]);
+
+        if (result && result !== text) {
+          return result;
+        }
+      } catch (error) {
+        console.warn("Tentativa de tradução falhou:", error);
+        continue;
+      }
+    }
+
+    return text;
+  }
+
+  // MyMemory API
+  async translateMyMemory(text) {
+    const url = `${APIS.TRANSLATION}?q=${encodeURIComponent(
+      text
+    )}&langpair=en|pt-br`;
+    const response = await fetch(url);
     const data = await response.json();
-    if (data && data.responseData && data.responseData.translatedText) {
+
+    if (data?.responseData?.translatedText) {
       return data.responseData.translatedText;
     }
-  } catch (error) {
-    console.warn("Erro ao usar API de tradução, retornando original:", error);
+
+    throw new Error("MyMemory translation failed");
   }
-  return text; // Retorna o texto original se a tradução falhar
+
+  // Tradução simples baseada em padrões
+  translateSimple(text) {
+    // Implementação de tradução básica para casos simples
+    const simplePatterns = {
+      the: "o/a",
+      and: "e",
+      or: "ou",
+      of: "de",
+      in: "em",
+      is: "é",
+      was: "foi",
+      are: "são",
+      were: "foram",
+    };
+
+    let result = text;
+    Object.entries(simplePatterns).forEach(([en, pt]) => {
+      const regex = new RegExp(`\b${en}\b`, "gi");
+      result = result.replace(regex, pt);
+    });
+
+    return result;
+  }
+
+  // Traduzir array de textos em lote
+  async translateBatch(texts) {
+    const results = [];
+
+    for (let i = 0; i < texts.length; i += CONFIG.BATCH_SIZE) {
+      const batch = texts.slice(i, i + CONFIG.BATCH_SIZE);
+      const batchPromises = batch.map((text) => this.translate(text));
+      const batchResults = await Promise.all(batchPromises);
+      results.push(...batchResults);
+
+      // Delay entre lotes para não sobrecarregar APIs
+      if (i + CONFIG.BATCH_SIZE < texts.length) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, CONFIG.TRANSLATION_DELAY)
+        );
+      }
+    }
+
+    return results;
+  }
 }
 
-// Pega perguntas do books.json e monta questões
-async function generateBookQuestions(difficulty = "facil") {
-  console.log("Gerando perguntas dos livros do clube...");
-  try {
-    const resp = await fetch("data/books.json");
-    if (!resp.ok) throw new Error("Erro ao carregar books.json");
-    const books = await resp.json();
+// ===== GERADOR DE PERGUNTAS DOS LIVROS =====
+class BookQuestionGenerator {
+  constructor() {
+    this.books = [];
+    this.usedBooks = new Set();
+  }
 
-    let pool = books;
-    // CORREÇÃO: Usar 'descricao' em vez de 'sinopse'
-    if (difficulty === "medium")
-      pool = books.filter(
-        (book) => book.descricao && book.descricao.length > 100
+  async loadBooks() {
+    try {
+      const response = await fetch("data/books.json");
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+
+      this.books = await response.json();
+      console.log(`📚 ${this.books.length} livros carregados`);
+
+      return this.books;
+    } catch (error) {
+      console.error("❌ Erro ao carregar livros:", error);
+      throw new Error("Não foi possível carregar os dados dos livros");
+    }
+  }
+
+  // Filtrar livros por dificuldade
+  filterBooksByDifficulty(difficulty) {
+    switch (difficulty) {
+      case "facil":
+        return this.books.filter(
+          (book) =>
+            book.titulo &&
+            book.autor &&
+            book.titulo.length <= 50 &&
+            book.ano_publicacao >= 1950
+        );
+
+      case "medium":
+        return this.books.filter(
+          (book) =>
+            book.descricao &&
+            book.descricao.length > 100 &&
+            book.genero &&
+            book.genero.length > 0 &&
+            book.corrente_literaria
+        );
+
+      case "hard":
+        return this.books.filter(
+          (book) =>
+            book.ano_publicacao < 1980 &&
+            book.local &&
+            book.pais &&
+            book.corrente_literaria
+        );
+
+      default:
+        return this.books;
+    }
+  }
+
+  // Gerar pergunta baseada no tipo e dificuldade
+  generateQuestion(book, difficulty, allBooks) {
+    const questionTypes = this.getQuestionTypes(difficulty);
+    const randomType =
+      questionTypes[Math.floor(Math.random() * questionTypes.length)];
+
+    return this.createQuestionByType(book, randomType, allBooks);
+  }
+
+  // Tipos de pergunta por dificuldade
+  getQuestionTypes(difficulty) {
+    const types = {
+      facil: ["author", "title_by_author", "year_simple"],
+      medium: ["description", "genre", "collection", "movement"],
+      hard: ["year_exact", "location", "movement_advanced", "country"],
+    };
+
+    return types[difficulty] || types.facil;
+  }
+
+  // Criar pergunta específica por tipo
+  createQuestionByType(book, type, allBooks) {
+    const generators = {
+      author: () => this.generateAuthorQuestion(book, allBooks),
+      title_by_author: () => this.generateTitleByAuthorQuestion(book, allBooks),
+      year_simple: () => this.generateYearSimpleQuestion(book),
+      description: () => this.generateDescriptionQuestion(book, allBooks),
+      genre: () => this.generateGenreQuestion(book, allBooks),
+      collection: () => this.generateCollectionQuestion(book, allBooks),
+      movement: () => this.generateMovementQuestion(book, allBooks),
+      year_exact: () => this.generateYearExactQuestion(book),
+      location: () => this.generateLocationQuestion(book, allBooks),
+      movement_advanced: () =>
+        this.generateMovementAdvancedQuestion(book, allBooks),
+      country: () => this.generateCountryQuestion(book, allBooks),
+    };
+
+    const generator = generators[type];
+    if (!generator) {
+      return this.generateAuthorQuestion(book, allBooks);
+    }
+
+    try {
+      return generator();
+    } catch (error) {
+      console.warn(`Erro ao gerar pergunta tipo ${type}:`, error);
+      return this.generateAuthorQuestion(book, allBooks);
+    }
+  }
+
+  // Geradores específicos de perguntas
+  generateAuthorQuestion(book, allBooks) {
+    const otherAuthors = [...new Set(allBooks.map((b) => b.autor))]
+      .filter((author) => author !== book.autor)
+      .slice(0, 3);
+
+    return {
+      pergunta: `Quem é o autor de "${book.titulo}"?`,
+      respostas: this.shuffleArray([book.autor, ...otherAuthors]),
+      correta: book.autor,
+      categoria: "Autor",
+      dificuldade: "Fácil",
+    };
+  }
+
+  generateTitleByAuthorQuestion(book, allBooks) {
+    const otherTitles = allBooks
+      .filter((b) => b.autor !== book.autor)
+      .map((b) => b.titulo)
+      .slice(0, 3);
+
+    return {
+      pergunta: `Qual destes livros foi escrito por ${book.autor}?`,
+      respostas: this.shuffleArray([book.titulo, ...otherTitles]),
+      correta: book.titulo,
+      categoria: "Título",
+      dificuldade: "Fácil",
+    };
+  }
+
+  generateDescriptionQuestion(book, allBooks) {
+    const shortDescription = book.descricao.substring(0, 120) + "...";
+    const otherTitles = allBooks
+      .filter((b) => b.id !== book.id)
+      .map((b) => b.titulo)
+      .slice(0, 3);
+
+    return {
+      pergunta: `Qual livro tem a seguinte sinopse: "${shortDescription}"`,
+      respostas: this.shuffleArray([book.titulo, ...otherTitles]),
+      correta: book.titulo,
+      categoria: "Sinopse",
+      dificuldade: "Médio",
+    };
+  }
+
+  generateGenreQuestion(book, allBooks) {
+    const bookGenres = Array.isArray(book.genero) ? book.genero : [book.genero];
+    const correctGenre = bookGenres[0];
+
+    const otherGenres = [
+      ...new Set(
+        allBooks.flatMap((b) =>
+          Array.isArray(b.genero) ? b.genero : [b.genero]
+        )
+      ),
+    ]
+      .filter((genre) => !bookGenres.includes(genre))
+      .slice(0, 3);
+
+    return {
+      pergunta: `Qual é o principal gênero literário de "${book.titulo}"?`,
+      respostas: this.shuffleArray([correctGenre, ...otherGenres]),
+      correta: correctGenre,
+      categoria: "Gênero",
+      dificuldade: "Médio",
+    };
+  }
+
+  generateYearExactQuestion(book) {
+    const correctYear = book.ano_publicacao;
+    const incorrectYears = [];
+
+    // Gerar anos próximos
+    for (let i = 0; i < 3; i++) {
+      let year =
+        correctYear +
+        (Math.random() > 0.5 ? 1 : -1) * (Math.floor(Math.random() * 10) + 1);
+      if (year < 1000) year = 1000 + Math.floor(Math.random() * 1000);
+      incorrectYears.push(year);
+    }
+
+    return {
+      pergunta: `Em que ano foi publicado "${book.titulo}"?`,
+      respostas: this.shuffleArray(
+        [correctYear, ...incorrectYears].map(String)
+      ),
+      correta: String(correctYear),
+      categoria: "Ano de Publicação",
+      dificuldade: "Difícil",
+    };
+  }
+
+  generateLocationQuestion(book, allBooks) {
+    const otherLocations = [...new Set(allBooks.map((b) => b.local))]
+      .filter((location) => location !== book.local && location)
+      .slice(0, 3);
+
+    return {
+      pergunta: `Onde se passa a história de "${book.titulo}"?`,
+      respostas: this.shuffleArray([book.local, ...otherLocations]),
+      correta: book.local,
+      categoria: "Localização",
+      dificuldade: "Difícil",
+    };
+  }
+
+  generateMovementQuestion(book, allBooks) {
+    const otherMovements = [
+      ...new Set(allBooks.map((b) => b.corrente_literaria)),
+    ]
+      .filter((movement) => movement !== book.corrente_literaria && movement)
+      .slice(0, 3);
+
+    return {
+      pergunta: `A qual corrente literária pertence "${book.titulo}"?`,
+      respostas: this.shuffleArray([
+        book.corrente_literaria,
+        ...otherMovements,
+      ]),
+      correta: book.corrente_literaria,
+      categoria: "Corrente Literária",
+      dificuldade: "Médio",
+    };
+  }
+
+  generateCollectionQuestion(book, allBooks) {
+    const bookCollections = Array.isArray(book.colecao)
+      ? book.colecao
+      : [book.colecao];
+    const correctCollection = bookCollections[0];
+
+    const otherCollections = [
+      ...new Set(
+        allBooks.flatMap((b) =>
+          Array.isArray(b.colecao) ? b.colecao : [b.colecao]
+        )
+      ),
+    ]
+      .filter(
+        (collection) => !bookCollections.includes(collection) && collection
+      )
+      .slice(0, 3);
+
+    return {
+      pergunta: `"${book.titulo}" faz parte de qual coleção do clube?`,
+      respostas: this.shuffleArray([correctCollection, ...otherCollections]),
+      correta: correctCollection,
+      categoria: "Coleção",
+      dificuldade: "Médio",
+    };
+  }
+
+  generateCountryQuestion(book, allBooks) {
+    const otherCountries = [...new Set(allBooks.map((b) => b.pais))]
+      .filter((country) => country !== book.pais && country)
+      .slice(0, 3);
+
+    return {
+      pergunta: `"${book.titulo}" foi escrito por um autor de qual país?`,
+      respostas: this.shuffleArray([book.pais, ...otherCountries]),
+      correta: book.pais,
+      categoria: "País",
+      dificuldade: "Difícil",
+    };
+  }
+
+  // Gerar múltiplas perguntas
+  async generateQuestions(
+    difficulty = "facil",
+    count = CONFIG.TOTAL_QUESTIONS
+  ) {
+    if (this.books.length === 0) {
+      await this.loadBooks();
+    }
+
+    const filteredBooks = this.filterBooksByDifficulty(difficulty);
+
+    if (filteredBooks.length === 0) {
+      throw new Error(
+        `Não há livros suficientes para a dificuldade "${difficulty}"`
       );
-    else if (difficulty === "hard")
-      pool = books.filter((book) => book.ano_publicacao < 1980);
-
-    // Adiciona log para verificar o pool após a filtragem
-    console.log(
-      `Pool de livros para dificuldade ${difficulty}: ${pool.length} livros.`
-    );
+    }
 
     const questions = [];
-    const allAuthors = Array.from(new Set(books.map((b) => b.autor))); // Pool completo de autores
+    const usedBooks = new Set();
 
-    // Garante que o pool não está vazio
-    if (pool.length === 0) {
-      showError(
-        "Não há livros suficientes para gerar perguntas com essa dificuldade. Tente outra!"
+    for (let i = 0; i < count && filteredBooks.length > 0; i++) {
+      // Selecionar livro não usado
+      let availableBooks = filteredBooks.filter(
+        (book) => !usedBooks.has(book.id)
       );
-      return [];
-    }
 
-    for (let i = 0; i < TOTAL_QUESTIONS; i++) {
-      if (pool.length === 0) {
-        console.warn(
-          "Não há livros suficientes no pool para gerar todas as perguntas. Perguntas geradas:",
-          questions.length
+      if (availableBooks.length === 0) {
+        // Se todos foram usados, resetar para permitir reutilização
+        usedBooks.clear();
+        availableBooks = filteredBooks;
+      }
+
+      const randomBook =
+        availableBooks[Math.floor(Math.random() * availableBooks.length)];
+      usedBooks.add(randomBook.id);
+
+      try {
+        const question = this.generateQuestion(
+          randomBook,
+          difficulty,
+          this.books
         );
-        break;
-      }
-
-      // Seleciona um livro aleatoriamente do pool e o remove (para evitar repetição na mesma rodada de quiz)
-      const randomIndex = Math.floor(Math.random() * pool.length);
-      const book = pool.splice(randomIndex, 1)[0]; // Remove o livro do pool
-
-      let questionText, correctAnswer, incorrectAnswers;
-
-      switch (difficulty) {
-        case "facil":
-          questionText = `Quem é o autor de "${book.titulo}"?`;
-          correctAnswer = book.autor;
-          incorrectAnswers = shuffle(
-            allAuthors.filter((a) => a !== book.autor) // Filtra o autor correto
-          ).slice(0, 3);
-          break;
-        case "medium":
-          questionText = `Qual livro conta a história de "${book.descricao.substring(
-            0,
-            Math.min(book.descricao.length, 120)
-          )}..."?`;
-          correctAnswer = book.titulo;
-          incorrectAnswers = shuffle(
-            books.filter((b) => b.id !== book.id).map((b) => b.titulo) // Pega títulos de outros livros
-          ).slice(0, 3);
-          break;
-        case "hard":
-          questionText = `Qual o ano de publicação de "${book.titulo}"?`;
-          correctAnswer = String(book.ano_publicacao);
-          incorrectAnswers = [];
-          // Gera anos próximos como respostas incorretas
-          for (let j = 0; j < 3; j++) {
-            let year =
-              parseInt(book.ano_publicacao) +
-              Math.floor(Math.random() * 20) -
-              10;
-            // Evita anos inválidos
-            if (year < 0) year = Math.abs(year);
-            if (year === parseInt(book.ano_publicacao)) year += 1; // Garante que não seja o ano correto
-            incorrectAnswers.push(String(year));
-          }
-          break;
-        default: // Fallback para fácil se a dificuldade for desconhecida
-          questionText = `Quem escreveu "${book.titulo}"?`;
-          correctAnswer = book.autor;
-          incorrectAnswers = shuffle(
-            allAuthors.filter((a) => a !== book.autor)
-          ).slice(0, 3);
-      }
-
-      let allAnswers = [correctAnswer, ...incorrectAnswers];
-      allAnswers = Array.from(new Set(allAnswers)); // Remove duplicatas
-
-      // Garante que haja 4 opções, se possível, puxando mais do pool de autores/títulos/anos
-      while (allAnswers.length < 4) {
-        let additionalOption = null;
-        if (difficulty === "facil" || difficulty === "hard") {
-          const potentialOption =
-            allAuthors[Math.floor(Math.random() * allAuthors.length)];
-          if (!allAnswers.includes(potentialOption))
-            additionalOption = potentialOption;
-        } else if (difficulty === "medium") {
-          const potentialOption =
-            books[Math.floor(Math.random() * books.length)].titulo;
-          if (!allAnswers.includes(potentialOption))
-            additionalOption = potentialOption;
+        if (question && question.respostas.length >= 4) {
+          questions.push(question);
         }
-
-        if (additionalOption) {
-          allAnswers.push(additionalOption);
-        } else {
-          // Se não conseguiu adicionar uma opção única, para evitar loop infinito
-          break;
-        }
+      } catch (error) {
+        console.warn(
+          `Erro ao gerar pergunta para livro ${randomBook.titulo}:`,
+          error
+        );
       }
-
-      questions.push({
-        pergunta: questionText,
-        respostas: shuffle(allAnswers),
-        correta: correctAnswer,
-      });
     }
+
     return questions;
-  } catch (error) {
-    console.error("Erro ao gerar perguntas dos livros do clube:", error);
-    showError(
-      "Erro ao gerar perguntas dos livros do clube. Verifique o arquivo books.json."
-    );
-    return [];
+  }
+
+  // Utilitário para embaralhar array
+  shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
   }
 }
 
-// Pega perguntas de uma API pública de quiz (Open Trivia DB)
-async function getPublicQuizQuestions(difficulty = "easy") {
-  console.log(
-    `Buscando perguntas da API pública (dificuldade: ${difficulty})...`
-  );
-  showLoading(true);
-  let category = 10; // Categoria "Entertainment: Books"
+// ===== CLIENTE DA API PÚBLICA =====
+class PublicQuizAPI {
+  constructor() {
+    this.translator = new TranslationService();
+    this.baseURL = APIS.TRIVIA;
+  }
 
-  // Tenta pegar da categoria de livros primeiro
-  let url = `${OPEN_TRIVIA_API_BASE}&category=${category}&difficulty=${difficulty}`;
-  let data;
+  // Buscar perguntas com retry e fallback
+  async fetchQuestions(difficulty = "easy", count = CONFIG.TOTAL_QUESTIONS) {
+    const categories = [
+      { id: 10, name: "Entertainment: Books" },
+      { id: 9, name: "General Knowledge" },
+      { id: 17, name: "Science & Nature" },
+      { id: 23, name: "History" },
+    ];
 
-  try {
-    const response = await fetch(url);
-    data = await response.json();
+    for (const category of categories) {
+      try {
+        console.log(`🔍 Tentando categoria: ${category.name}`);
+        const questions = await this.fetchFromCategory(
+          category.id,
+          difficulty,
+          count
+        );
 
-    // Se não há perguntas de livros ou erro, tenta Conhecimentos Gerais
-    if (data.response_code !== 0 || !data.results.length) {
-      console.warn(
-        `Não há perguntas de livros para dificuldade ${difficulty}. Tentando categoria "General Knowledge".`
-      );
-      category = 9; // Categoria "General Knowledge"
-      url = `${OPEN_TRIVIA_API_BASE}&category=${category}&difficulty=${difficulty}`;
-      const generalResponse = await fetch(url);
-      data = await generalResponse.json();
+        if (questions.length > 0) {
+          console.log(
+            `✅ ${questions.length} perguntas obtidas de ${category.name}`
+          );
+          return questions;
+        }
+      } catch (error) {
+        console.warn(`⚠️ Erro na categoria ${category.name}:`, error);
+        continue;
+      }
     }
 
-    if (data.response_code !== 0 || !data.results.length) {
-      throw new Error(
-        "Não foi possível carregar perguntas da API OpenTDB após tentativas."
-      );
+    throw new Error("Não foi possível obter perguntas de nenhuma categoria");
+  }
+
+  // Buscar de categoria específica
+  async fetchFromCategory(categoryId, difficulty, count) {
+    const url = `${this.baseURL}?amount=${count}&category=${categoryId}&difficulty=${difficulty}&type=multiple&encode=base64`;
+
+    const response = await this.fetchWithTimeout(url, CONFIG.API_TIMEOUT);
+    const data = await response.json();
+
+    if (data.response_code !== 0) {
+      throw new Error(`API retornou código de erro: ${data.response_code}`);
     }
 
-    const questions = await Promise.all(
-      data.results.map(async (q) => {
-        // Decodifica de base64
+    if (!data.results || data.results.length === 0) {
+      throw new Error("Nenhuma pergunta retornada pela API");
+    }
+
+    return await this.processQuestions(data.results);
+  }
+
+  // Fetch com timeout
+  async fetchWithTimeout(url, timeout) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+
+    try {
+      const response = await fetch(url, { signal: controller.signal });
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      return response;
+    } catch (error) {
+      clearTimeout(timeoutId);
+      throw error;
+    }
+  }
+
+  // Processar e traduzir perguntas
+  async processQuestions(rawQuestions) {
+    const questions = [];
+
+    for (const q of rawQuestions) {
+      try {
+        // Decodificar base64
         const decodedQuestion = atob(q.question);
         const decodedCorrect = atob(q.correct_answer);
         const decodedIncorrect = q.incorrect_answers.map((ans) => atob(ans));
 
-        // Traduz pergunta e respostas
-        const translatedQuestion = await translateText(decodedQuestion);
-        const translatedCorrect = await translateText(decodedCorrect);
-        const translatedIncorrect = await Promise.all(
-          decodedIncorrect.map((ans) => translateText(ans))
+        // Traduzir
+        const translatedQuestion = await this.translator.translate(
+          decodedQuestion
+        );
+        const translatedCorrect = await this.translator.translate(
+          decodedCorrect
+        );
+        const translatedIncorrect = await this.translator.translateBatch(
+          decodedIncorrect
         );
 
-        return {
+        const question = {
           pergunta: translatedQuestion,
-          respostas: shuffle([translatedCorrect, ...translatedIncorrect]),
+          respostas: this.shuffleArray([
+            translatedCorrect,
+            ...translatedIncorrect,
+          ]),
           correta: translatedCorrect,
+          categoria: await this.translator.translate(q.category),
+          dificuldade: await this.translator.translate(q.difficulty),
+          original: {
+            question: decodedQuestion,
+            correct: decodedCorrect,
+            incorrect: decodedIncorrect,
+          },
         };
-      })
-    );
-    return questions;
-  } catch (error) {
-    console.error("Erro ao buscar perguntas da API pública:", error);
-    showError(
-      "Não foi possível carregar perguntas da API pública. Tente novamente ou use os livros do clube."
-    );
-    return [];
-  } finally {
-    hideLoading();
-  }
-}
 
-// --- LÓGICA DO QUIZ ---
-let perguntas = [];
-let currentQuestionIndex = 0;
-let score = 0;
-
-function resetQuiz() {
-  console.log("Reiniciando quiz...");
-  perguntas = [];
-  currentQuestionIndex = 0;
-  score = 0;
-  document.getElementById("quiz-area").style.display = "none";
-  document.getElementById("quiz-fim").style.display = "none";
-  document.getElementById("quiz-config").style.display = "flex";
-  document.getElementById("quiz-feedback").textContent = ""; // Limpa feedback
-  document.getElementById("quiz-respostas").innerHTML = ""; // Limpa respostas
-}
-
-function showQuestion() {
-  const quest = perguntas[currentQuestionIndex];
-  if (!quest) {
-    exibeFimQuiz(); // Se não houver mais perguntas válidas
-    return;
-  }
-
-  document.getElementById("currentQuestionNumber").textContent =
-    currentQuestionIndex + 1;
-  document.getElementById("totalQuestionsNumber").textContent =
-    perguntas.length;
-  document.getElementById("quiz-pergunta").innerText = quest.pergunta;
-  document.getElementById("quiz-feedback").textContent = "";
-
-  const respostasDiv = document.getElementById("quiz-respostas");
-  respostasDiv.innerHTML = "";
-
-  quest.respostas.forEach((resp) => {
-    const btn = document.createElement("button");
-    btn.textContent = resp;
-    btn.onclick = () => checkAnswer(btn, resp); // Passa o botão para mudar a classe
-    respostasDiv.appendChild(btn);
-  });
-  document.getElementById("quiz-next").style.display = "none";
-}
-
-function checkAnswer(selectedButton, userAnswer) {
-  const correctAnswer = perguntas[currentQuestionIndex].correta;
-
-  // Desabilita todos os botões de resposta
-  Array.from(document.querySelectorAll("#quiz-respostas button")).forEach(
-    (b) => (b.disabled = true)
-  );
-
-  if (userAnswer === correctAnswer) {
-    score++;
-    selectedButton.classList.add("correct");
-    document.getElementById("quiz-feedback").textContent =
-      "✔️ Resposta correta!";
-    document.getElementById("quiz-feedback").style.color = "forestgreen";
-  } else {
-    selectedButton.classList.add("incorrect");
-    document.getElementById(
-      "quiz-feedback"
-    ).textContent = `❌ Resposta errada! A resposta correta era: ${correctAnswer}`;
-    document.getElementById("quiz-feedback").style.color = "crimson";
-    // Destaca a resposta correta
-    Array.from(document.querySelectorAll("#quiz-respostas button")).forEach(
-      (b) => {
-        if (b.textContent === correctAnswer) {
-          b.classList.add("correct");
-        }
+        questions.push(question);
+      } catch (error) {
+        console.warn("Erro ao processar pergunta:", error);
+        continue;
       }
+    }
+
+    return questions;
+  }
+
+  // Utilitário para embaralhar
+  shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  }
+}
+
+// ===== CONTROLADOR PRINCIPAL DO QUIZ =====
+class QuizController {
+  constructor() {
+    this.bookGenerator = new BookQuestionGenerator();
+    this.publicAPI = new PublicQuizAPI();
+    this.questions = [];
+    this.currentQuestionIndex = 0;
+    this.score = 0;
+    this.startTime = null;
+    this.answers = [];
+
+    this.initializeEventListeners();
+  }
+
+  // Inicializar event listeners
+  initializeEventListeners() {
+    document
+      .getElementById("iniciar-quiz")
+      .addEventListener("click", () => this.startQuiz());
+    document
+      .getElementById("quiz-next")
+      .addEventListener("click", () => this.nextQuestion());
+    document
+      .getElementById("quiz-reiniciar")
+      .addEventListener("click", () => this.resetQuiz());
+    document
+      .getElementById("share-whatsapp")
+      .addEventListener("click", () => this.shareOnWhatsApp());
+  }
+
+  // Iniciar quiz
+  async startQuiz() {
+    try {
+      const difficulty = document.getElementById("dificuldade").value;
+      const origin = document.getElementById("origem").value;
+
+      console.log(`🚀 Iniciando quiz: ${origin} - ${difficulty}`);
+
+      // Mostrar área do quiz e loading
+      this.showSection("quiz-area");
+      this.showLoading(true);
+
+      // Gerar perguntas
+      if (origin === "books") {
+        this.questions = await this.bookGenerator.generateQuestions(difficulty);
+      } else {
+        this.questions = await this.publicAPI.fetchQuestions(difficulty);
+      }
+
+      if (this.questions.length === 0) {
+        throw new Error("Nenhuma pergunta foi gerada");
+      }
+
+      // Inicializar estado do quiz
+      this.currentQuestionIndex = 0;
+      this.score = 0;
+      this.startTime = Date.now();
+      this.answers = [];
+
+      console.log(`✅ Quiz iniciado com ${this.questions.length} perguntas`);
+
+      this.hideLoading();
+      this.showQuestion();
+    } catch (error) {
+      console.error("❌ Erro ao iniciar quiz:", error);
+      this.showError(error.message);
+    }
+  }
+
+  // Mostrar pergunta atual
+  showQuestion() {
+    const question = this.questions[this.currentQuestionIndex];
+    if (!question) {
+      this.endQuiz();
+      return;
+    }
+
+    // Atualizar contador
+    document.getElementById("currentQuestionNumber").textContent =
+      this.currentQuestionIndex + 1;
+    document.getElementById("totalQuestionsNumber").textContent =
+      this.questions.length;
+
+    // Mostrar pergunta
+    document.getElementById("quiz-pergunta").textContent = question.pergunta;
+
+    // Limpar feedback anterior
+    document.getElementById("quiz-feedback").textContent = "";
+
+    // Criar botões de resposta
+    const answersContainer = document.getElementById("quiz-respostas");
+    answersContainer.innerHTML = "";
+
+    question.respostas.forEach((answer) => {
+      const button = document.createElement("button");
+      button.textContent = answer;
+      button.addEventListener("click", () => this.checkAnswer(button, answer));
+      answersContainer.appendChild(button);
+    });
+
+    // Esconder botão próxima
+    document.getElementById("quiz-next").style.display = "none";
+  }
+
+  // Verificar resposta
+  checkAnswer(selectedButton, userAnswer) {
+    const question = this.questions[this.currentQuestionIndex];
+    const isCorrect = userAnswer === question.correta;
+
+    // Desabilitar todos os botões
+    document.querySelectorAll("#quiz-respostas button").forEach((btn) => {
+      btn.disabled = true;
+    });
+
+    // Registrar resposta
+    this.answers.push({
+      question: question.pergunta,
+      userAnswer,
+      correctAnswer: question.correta,
+      isCorrect,
+      timeSpent: Date.now() - this.startTime,
+    });
+
+    // Atualizar score
+    if (isCorrect) {
+      this.score++;
+      selectedButton.classList.add("correct");
+      this.showFeedback("✅ Resposta correta!", "success");
+    } else {
+      selectedButton.classList.add("incorrect");
+      this.showFeedback(
+        `❌ Resposta incorreta! A resposta correta era: ${question.correta}`,
+        "error"
+      );
+
+      // Destacar resposta correta
+      document.querySelectorAll("#quiz-respostas button").forEach((btn) => {
+        if (btn.textContent === question.correta) {
+          btn.classList.add("correct");
+        }
+      });
+    }
+
+    // Mostrar botão próxima
+    document.getElementById("quiz-next").style.display = "inline-block";
+  }
+
+  // Próxima pergunta
+  nextQuestion() {
+    this.currentQuestionIndex++;
+
+    if (this.currentQuestionIndex < this.questions.length) {
+      this.showQuestion();
+    } else {
+      this.endQuiz();
+    }
+  }
+
+  // Finalizar quiz
+  endQuiz() {
+    const endTime = Date.now();
+    const totalTime = Math.round((endTime - this.startTime) / 1000);
+    const percentage = Math.round((this.score / this.questions.length) * 100);
+
+    console.log(
+      `🏁 Quiz finalizado: ${this.score}/${this.questions.length} (${percentage}%)`
     );
-  }
-  document.getElementById("quiz-next").style.display = "inline-block";
-}
 
-function nextQuestion() {
-  currentQuestionIndex++;
-  if (currentQuestionIndex < perguntas.length) {
-    showQuestion();
-  } else {
-    exibeFimQuiz();
-  }
-}
+    this.showSection("quiz-fim");
 
-function exibeFimQuiz() {
-  console.log("Exibindo tela final do quiz.");
-  document.getElementById("quiz-area").style.display = "none";
-  document.getElementById("quiz-fim").style.display = "block";
-
-  const resultadoDiv = document.getElementById("quiz-resultado");
-  resultadoDiv.innerHTML = `
-    <p>Você acertou <b>${score}</b> de <b>${TOTAL_QUESTIONS}</b> perguntas.</p>
-    <p>${
-      score === TOTAL_QUESTIONS
-        ? "Incrível! Parabéns, você é um mestre literário!"
-        : score >= TOTAL_QUESTIONS / 2
-        ? "Muito bom! Continue praticando para ser um mestre!"
-        : "Não desanime! Tente novamente para melhorar seu score!"
-    }</p>
-  `;
-}
-
-function shareOnWhatsApp() {
-  const resultText = `Participei do Quiz Literário do Leitores Inoxidáveis e acertei ${score} de ${TOTAL_QUESTIONS} perguntas! ��🧠`;
-  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(
-    resultText
-  )}\n\nJogue também: ${window.location.href}`;
-  window.open(whatsappUrl, "_blank");
-}
-
-// --- EVENT LISTENERS ---
-document.getElementById("iniciar-quiz").onclick = async () => {
-  console.log("Botão Iniciar Quiz clicado!");
-  const difficulty = document.getElementById("dificuldade").value;
-  const origin = document.getElementById("origem").value;
-
-  document.getElementById("quiz-config").style.display = "none";
-  document.getElementById("quiz-fim").style.display = "none";
-  document.getElementById("quiz-area").style.display = "block"; // Mostra área do quiz
-  showLoading(true); // Exibe loading
-
-  // Gera perguntas
-  if (origin === "books") {
-    perguntas = await generateBookQuestions(difficulty);
-  } else {
-    perguntas = await getPublicQuizQuestions(difficulty);
+    // Gerar relatório detalhado
+    const report = this.generateDetailedReport(totalTime, percentage);
+    document.getElementById("quiz-resultado").innerHTML = report;
   }
 
-  hideLoading(); // Esconde loading
+  // Gerar relatório detalhado
+  generateDetailedReport(totalTime, percentage) {
+    const performance = this.getPerformanceLevel(percentage);
+    const averageTime = Math.round(totalTime / this.questions.length);
 
-  if (perguntas.length === 0) {
-    console.error("Nenhuma pergunta gerada. Exibindo mensagem de erro.");
-    showError(
-      "Não foi possível carregar perguntas. Tente outra origem ou dificuldade."
+    return `
+      <div class="quiz-stats">
+        <div class="main-score">
+          <h3>Pontuação: ${this.score}/${this.questions.length}</h3>
+          <div class="percentage">${percentage}%</div>
+        </div>
+        
+        <div class="performance-level ${performance.class}">
+          <h4>${performance.title}</h4>
+          <p>${performance.message}</p>
+        </div>
+        
+        <div class="time-stats">
+          <p><strong>Tempo total:</strong> ${this.formatTime(totalTime)}</p>
+          <p><strong>Tempo médio por pergunta:</strong> ${this.formatTime(
+            averageTime
+          )}</p>
+        </div>
+        
+        <div class="category-breakdown">
+          <h4>Desempenho por categoria:</h4>
+          ${this.generateCategoryBreakdown()}
+        </div>
+      </div>
+    `;
+  }
+
+  // Obter nível de performance
+  getPerformanceLevel(percentage) {
+    if (percentage >= 90) {
+      return {
+        class: "excellent",
+        title: "🏆 Excelente!",
+        message:
+          "Você é um verdadeiro mestre literário! Parabéns pelo conhecimento excepcional!",
+      };
+    } else if (percentage >= 70) {
+      return {
+        class: "good",
+        title: "👏 Muito bom!",
+        message:
+          "Ótimo desempenho! Continue lendo e praticando para se tornar um expert!",
+      };
+    } else if (percentage >= 50) {
+      return {
+        class: "average",
+        title: "📚 Bom trabalho!",
+        message:
+          "Você está no caminho certo! Continue estudando para melhorar ainda mais!",
+      };
+    } else {
+      return {
+        class: "needs-improvement",
+        title: "💪 Continue tentando!",
+        message:
+          "Não desanime! A leitura é uma jornada. Continue praticando e você vai melhorar!",
+      };
+    }
+  }
+
+  // Gerar breakdown por categoria
+  generateCategoryBreakdown() {
+    const categories = {};
+
+    this.answers.forEach((answer) => {
+      const question = this.questions.find(
+        (q) => q.pergunta === answer.question
+      );
+      const category = question?.categoria || "Geral";
+
+      if (!categories[category]) {
+        categories[category] = { correct: 0, total: 0 };
+      }
+
+      categories[category].total++;
+      if (answer.isCorrect) {
+        categories[category].correct++;
+      }
+    });
+
+    return Object.entries(categories)
+      .map(([category, stats]) => {
+        const percentage = Math.round((stats.correct / stats.total) * 100);
+        return `
+          <div class="category-stat">
+            <span class="category-name">${category}:</span>
+            <span class="category-score">${stats.correct}/${stats.total} (${percentage}%)</span>
+          </div>
+        `;
+      })
+      .join("");
+  }
+
+  // Formatar tempo
+  formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+
+    if (minutes > 0) {
+      return `${minutes}min ${remainingSeconds}s`;
+    }
+    return `${remainingSeconds}s`;
+  }
+
+  // Resetar quiz
+  resetQuiz() {
+    this.questions = [];
+    this.currentQuestionIndex = 0;
+    this.score = 0;
+    this.startTime = null;
+    this.answers = [];
+
+    this.showSection("quiz-config");
+    document.getElementById("quiz-feedback").textContent = "";
+    document.getElementById("quiz-respostas").innerHTML = "";
+  }
+
+  // Compartilhar no WhatsApp
+  shareOnWhatsApp() {
+    const percentage = Math.round((this.score / this.questions.length) * 100);
+    const performance = this.getPerformanceLevel(percentage);
+
+    const message = `🧠📚 Acabei de fazer o Quiz Literário dos Leitores Inoxidáveis!
+
+📊 Meu resultado: ${this.score}/${this.questions.length} (${percentage}%)
+${performance.title}
+
+🎯 Teste seus conhecimentos também: ${window.location.href}
+
+#QuizLiterario #LeitoresInoxidaveis #Literatura`;
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+  }
+
+  // Utilitários de UI
+  showSection(sectionId) {
+    ["quiz-config", "quiz-area", "quiz-fim"].forEach((id) => {
+      document.getElementById(id).style.display = "none";
+    });
+    document.getElementById(sectionId).style.display = "block";
+  }
+
+  showLoading(show) {
+    const loadingOverlay = document.querySelector(
+      "#quiz-area .loading-overlay"
     );
-    return;
+    if (loadingOverlay) {
+      loadingOverlay.style.display = show ? "flex" : "none";
+    }
   }
 
-  // Limita as perguntas ao total desejado (se a API retornar mais)
-  perguntas = perguntas.slice(0, TOTAL_QUESTIONS);
-  console.log(`Quiz iniciado com ${perguntas.length} perguntas.`);
+  hideLoading() {
+    this.showLoading(false);
+  }
 
-  currentQuestionIndex = 0;
-  score = 0;
-  showQuestion(); // Mostra a primeira pergunta
-};
+  showFeedback(message, type) {
+    const feedbackElement = document.getElementById("quiz-feedback");
+    feedbackElement.textContent = message;
+    feedbackElement.className = `quiz-feedback ${type}`;
+  }
 
-document.getElementById("quiz-next").onclick = nextQuestion;
-document.getElementById("quiz-reiniciar").onclick = resetQuiz;
-document.getElementById("share-whatsapp").onclick = shareOnWhatsApp;
-
-// --- FUNÇÕES DE LOADING E ERRO ---
-function showLoading(show) {
-  const loadingOverlay = document.querySelector("#quiz-area .loading-overlay");
-  if (loadingOverlay) {
-    loadingOverlay.style.display = show ? "flex" : "none";
+  showError(message) {
+    this.showSection("quiz-area");
+    document.getElementById("quiz-area").innerHTML = `
+      <div class="error-container">
+        <h3>❌ Erro</h3>
+        <p>${message}</p>
+        <button onclick="quizController.resetQuiz()" class="main-button">
+          Voltar ao Início
+        </button>
+      </div>
+    `;
   }
 }
 
-function showError(message) {
-  const quizArea = document.getElementById("quiz-area");
-  quizArea.innerHTML = `
-    <div class="quiz-section">
-      <p style="color: #dc3545; font-weight: bold;">${message}</p>
-      <button onclick="resetQuiz()" class="main-button restart-button">Voltar ao Início</button>
-    </div>
-  `;
-  quizArea.style.display = "block";
-  document.getElementById("quiz-config").style.display = "none"; // Garante que a config não apareça junto
-}
+// ===== INICIALIZAÇÃO =====
+let quizController;
 
-// Estado inicial ao carregar a página
-document.addEventListener("DOMContentLoaded", resetQuiz);
+document.addEventListener("DOMContentLoaded", () => {
+  console.log("🎮 Inicializando Quiz Literário...");
+  quizController = new QuizController();
+});

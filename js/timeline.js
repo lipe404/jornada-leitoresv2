@@ -1,7 +1,7 @@
-// ===== VARIÁVEIS GLOBAIS =====
+// VARIÁVEIS GLOBAIS
 let allBooks = [];
 
-// ===== CARREGAR E ORDENAR LIVROS =====
+// CARREGAR E ORDENAR LIVROS
 async function carregarLivros() {
   try {
     const response = await fetch("data/books.json");
@@ -31,7 +31,7 @@ async function carregarLivros() {
   }
 }
 
-// ===== CRIAR EVENTO DA TIMELINE =====
+// CRIAR EVENTO DA TIMELINE
 function criarEventoTimeline(livro, index) {
   const genres = Array.isArray(livro.genero)
     ? livro.genero.join(", ")
@@ -46,7 +46,7 @@ function criarEventoTimeline(livro, index) {
     <div class="timeline-event" style="animation-delay: ${index * 0.1}s">
       <div class="timeline-year">${livro.ano_publicacao}</div>
       <div class="timeline-dot"></div>
-      <div class="event-content" 
+      <div class="event-content"
            data-book-id="${livro.id}"
            data-titulo="${livro.titulo}"
            data-autor="${livro.autor}"
@@ -57,13 +57,13 @@ function criarEventoTimeline(livro, index) {
            data-desc="${livro.descricao.replace(/"/g, "&quot;")}"
            data-capa="${livro.imagem_capa || "img/default-cover.png"}"
            data-colecoes="${livro.colecao ? livro.colecao.join(", ") : ""}">
-        
+
         <div class="book-info">
-          <img class="book-cover" 
-               src="${livro.imagem_capa || "img/default-cover.png"}" 
+          <img class="book-cover"
+               src="${livro.imagem_capa || "img/default-cover.png"}"
                alt="Capa de ${livro.titulo}"
                onerror="this.src='img/default-cover.png'">
-          
+
           <div class="book-details">
             <h3 class="book-title">${livro.titulo}</h3>
             <div class="book-author">${livro.autor}</div>
@@ -80,7 +80,7 @@ function criarEventoTimeline(livro, index) {
   `;
 }
 
-// ===== MOSTRAR MODAL DO LIVRO =====
+// MOSTRAR MODAL DO LIVRO
 function mostrarModalLivro(data) {
   const modal = document.getElementById("bookModal");
 
@@ -116,7 +116,7 @@ function mostrarModalLivro(data) {
   document.body.style.overflow = "hidden";
 }
 
-// ===== FECHAR MODAL =====
+// FECHAR MODAL
 function fecharModal() {
   const modal = document.getElementById("bookModal");
   modal.classList.remove("open");
@@ -129,7 +129,7 @@ function fecharModal() {
   }
 }
 
-// ===== ANIMAÇÃO DE SCROLL =====
+// ANIMAÇÃO DE SCROLL
 function animarEventosScroll() {
   const eventos = document.querySelectorAll(".timeline-event");
 
@@ -152,7 +152,7 @@ function animarEventosScroll() {
   });
 }
 
-// ===== BUSCAR CAPA MELHORADA =====
+// BUSCAR CAPA MELHORADA
 async function buscarCapaMelhorada(livro) {
   try {
     const query = encodeURIComponent(
@@ -175,7 +175,7 @@ async function buscarCapaMelhorada(livro) {
   return null;
 }
 
-// ===== ATUALIZAR CAPAS EM BACKGROUND =====
+// ATUALIZAR CAPAS EM BACKGROUND
 async function atualizarCapasBackground() {
   const livrosComCapaRuim = allBooks.filter(
     (livro) =>
@@ -185,10 +185,10 @@ async function atualizarCapasBackground() {
   );
 
   console.log(
-    `🔍 Buscando capas melhores para ${livrosComCapaRuim.length} livros...`
+    `Buscando capas melhores para ${livrosComCapaRuim.length} livros...`
   );
 
-  for (let i = 0; i < Math.min(livrosComCapaRuim.length, 10); i++) {
+  for (let i = 0; i < Math.min(livrosComCapaRuim.length, 100); i++) {
     const livro = livrosComCapaRuim[i];
     const novaCapa = await buscarCapaMelhorada(livro);
 
@@ -203,7 +203,7 @@ async function atualizarCapasBackground() {
         eventCard.dataset.capa = novaCapa;
       }
 
-      console.log(`✅ Capa atualizada para: ${livro.titulo}`);
+      console.log(`Capa atualizada para: ${livro.titulo}`);
     }
 
     // Delay entre buscas
@@ -211,9 +211,9 @@ async function atualizarCapasBackground() {
   }
 }
 
-// ===== INICIALIZAÇÃO =====
+// INICIALIZAÇÃO
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("🚀 Carregando Timeline Literária...");
+  console.log("Carregando Timeline Literária...");
 
   // Carregar livros
   allBooks = await carregarLivros();
@@ -256,6 +256,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
+  // Inicializar botão voltar ao topo
+  initBackToTop();
+
   // Fechar modal com ESC
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") fecharModal();
@@ -271,3 +274,85 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   console.log("✅ Timeline carregada com sucesso!");
 });
+
+// Função para mostrar/ocultar o botão baseado no scroll
+function toggleBackToTopButton() {
+  const backToTopBtn = document.getElementById("backToTop");
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const windowHeight = window.innerHeight;
+
+  // Mostra o botão após rolar mais de uma tela
+  if (scrollTop > windowHeight * 0.5) {
+    backToTopBtn.classList.add("visible");
+  } else {
+    backToTopBtn.classList.remove("visible");
+  }
+
+  // Atualizar indicador de progresso (opcional)
+  updateScrollProgress();
+}
+
+// Função para atualizar o progresso do scroll (opcional)
+function updateScrollProgress() {
+  const backToTopBtn = document.getElementById("backToTop");
+  const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+  const documentHeight =
+    document.documentElement.scrollHeight - window.innerHeight;
+  const progress = (scrollTop / documentHeight) * 360;
+
+  if (progress > 0) {
+    backToTopBtn.style.setProperty("--progress", `${progress}deg`);
+    backToTopBtn.classList.add("with-progress");
+  } else {
+    backToTopBtn.classList.remove("with-progress");
+  }
+}
+
+// Função para scroll suave ao topo
+function scrollToTop() {
+  const startPosition = window.pageYOffset;
+  const startTime = performance.now();
+  const duration = 800; // 800ms para a animação
+
+  function easeInOutCubic(t) {
+    return t < 0.5 ? 4 * t * t * t : (t - 1) * (2 * t - 2) * (2 * t - 2) + 1;
+  }
+
+  function animateScroll(currentTime) {
+    const elapsedTime = currentTime - startTime;
+    const progress = Math.min(elapsedTime / duration, 1);
+    const ease = easeInOutCubic(progress);
+
+    window.scrollTo(0, startPosition * (1 - ease));
+
+    if (progress < 1) {
+      requestAnimationFrame(animateScroll);
+    }
+  }
+
+  requestAnimationFrame(animateScroll);
+}
+
+// Função para inicializar o botão voltar ao topo
+function initBackToTop() {
+  const backToTopBtn = document.getElementById("backToTop");
+
+  if (!backToTopBtn) return;
+
+  // Event listener para o clique
+  backToTopBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    scrollToTop();
+  });
+
+  // Event listener para o scroll
+  let scrollTimeout;
+  window.addEventListener("scroll", () => {
+    // Debounce para melhor performance
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(toggleBackToTopButton, 10);
+  });
+
+  // Verificação inicial
+  toggleBackToTopButton();
+}

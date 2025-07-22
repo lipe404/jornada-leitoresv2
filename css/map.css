@@ -1,4 +1,4 @@
-/* ===== LAYOUT PRINCIPAL ===== */
+/* LAYOUT PRINCIPAL */
 body {
   margin: 0;
   font-family: "Segoe UI", Arial, sans-serif;
@@ -6,14 +6,14 @@ body {
 }
 
 main {
-  margin-left: 270px;
+  margin-left: 240px;
   padding: 0;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
 }
 
-/* ===== HEADER DO MAPA ===== */
+/* HEADER DO MAPA */
 .map-header {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(10px);
@@ -40,7 +40,7 @@ main {
   font-size: 1.1em;
 }
 
-/* ===== CONTROLES DO MAPA ===== */
+/* CONTROLES DO MAPA */
 .map-controls {
   display: flex;
   gap: 20px;
@@ -88,20 +88,25 @@ main {
   display: flex;
   gap: 12px;
   align-items: center;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .filter-controls select {
   padding: 10px 12px;
   border: 2px solid #e1e8ed;
-  border-radius: 6px;
+  border-radius: 8px;
   background: white;
   font-size: 0.9em;
   cursor: pointer;
   outline: none;
+  min-width: 150px;
+  transition: all 0.3s ease;
 }
 
 .filter-controls select:focus {
   border-color: #3d5afe;
+  box-shadow: 0 0 0 3px rgba(61, 90, 254, 0.1);
 }
 
 #resetFilters {
@@ -119,7 +124,7 @@ main {
   background: #ff5252;
 }
 
-/* ===== ESTATÍSTICAS ===== */
+/* ESTATÍSTICAS */
 .map-stats {
   display: flex;
   justify-content: center;
@@ -142,7 +147,7 @@ main {
   color: #666;
 }
 
-/* ===== MAPA ===== */
+/* MAPA */
 #map-literario {
   flex: 1;
   min-height: 500px;
@@ -151,7 +156,7 @@ main {
   box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.1);
 }
 
-/* ===== MARCADORES CUSTOMIZADOS ===== */
+/* MARCADORES CUSTOMIZADOS */
 .book-marker {
   background: linear-gradient(135deg, #3d5afe, #1de9b6);
   border: 3px solid white;
@@ -189,24 +194,40 @@ main {
 }
 
 .cluster-marker {
-  background: linear-gradient(135deg, #ff6b6b, #ffa726);
-  border: 3px solid white;
   border-radius: 50%;
-  color: white;
-  font-weight: bold;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  color: white;
+  font-weight: bold;
+  font-size: 14px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(255, 107, 107, 0.3);
+}
+
+.cluster-small {
+  background: linear-gradient(135deg, #3d5afe, #1de9b6);
+  width: 35px;
+  height: 35px;
+}
+
+.cluster-medium {
+  background: linear-gradient(135deg, #ff6b6b, #ffa726);
+  width: 40px;
+  height: 40px;
+}
+
+.cluster-large {
+  background: linear-gradient(135deg, #9c27b0, #e91e63);
+  width: 45px;
+  height: 45px;
 }
 
 .cluster-marker:hover {
   transform: scale(1.1);
 }
 
-/* ===== POPUPS CUSTOMIZADOS ===== */
+/* POPUPS CUSTOMIZADOS */
 .leaflet-popup-content-wrapper {
   border-radius: 12px;
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
@@ -222,15 +243,16 @@ main {
 
 .popup-content {
   padding: 16px;
-  max-width: 280px;
+  max-width: 300px;
 }
 
 .popup-cover {
   width: 100%;
-  height: 120px;
+  height: 140px;
   object-fit: cover;
   border-radius: 8px;
   margin-bottom: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
 }
 
 .popup-title {
@@ -259,6 +281,12 @@ main {
   flex-wrap: wrap;
 }
 
+.popup-year {
+  color: #666;
+  font-size: 0.9em;
+  margin-bottom: 8px;
+}
+
 .popup-collection-badge {
   background: linear-gradient(135deg, #3d5afe, #1de9b6);
   color: white;
@@ -285,7 +313,7 @@ main {
   transform: translateY(-1px);
 }
 
-/* ===== LOADING ===== */
+/* LOADING */
 .map-loading {
   position: absolute;
   top: 0;
@@ -324,7 +352,39 @@ main {
   }
 }
 
-/* ===== MODAL ===== */
+/* MARCADORES FICCIONAIS */
+.book-marker.fictional {
+  background: linear-gradient(135deg, #9c27b0, #e91e63);
+  border: 3px solid #fff;
+  animation: pulse-fictional 2s ease-in-out infinite;
+}
+
+.book-marker.fictional .marker-content {
+  font-size: 16px;
+  filter: drop-shadow(0 0 3px rgba(156, 39, 176, 0.8));
+}
+
+@keyframes pulse-fictional {
+  0%,
+  100% {
+    box-shadow: 0 4px 15px rgba(156, 39, 176, 0.4);
+  }
+  50% {
+    box-shadow: 0 6px 20px rgba(156, 39, 176, 0.7);
+  }
+}
+
+/* POPUP FICCIONAL */
+.popup-location.fictional {
+  color: #9c27b0;
+  font-weight: 600;
+  background: rgba(156, 39, 176, 0.1);
+  padding: 4px 8px;
+  border-radius: 6px;
+  border-left: 3px solid #9c27b0;
+}
+
+/* MODAL */
 .modal {
   display: none;
   position: fixed;
@@ -453,7 +513,7 @@ main {
   text-align: justify;
 }
 
-/* ===== RESPONSIVIDADE ===== */
+/* RESPONSIVIDADE */
 @media (max-width: 768px) {
   main {
     margin-left: 0;
@@ -477,8 +537,13 @@ main {
   }
 
   .filter-controls {
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .filter-controls select {
+    width: 100%;
+    min-width: unset;
   }
 
   .map-stats {
@@ -531,7 +596,7 @@ main {
   }
 }
 
-/* ===== CONTROLES DO LEAFLET ===== */
+/* CONTROLES DO LEAFLET */
 .leaflet-control-zoom {
   border: none;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);

@@ -314,12 +314,33 @@ async function renderBooksWithCovers(books) {
 
 // CRIAR LOMBADA DO LIVRO
 function createBookSpine(book) {
-  const title =
-    book.titulo.length > 25
-      ? book.titulo.substring(0, 25) + "..."
-      : book.titulo;
-  const author =
-    book.autor.length > 20 ? book.autor.substring(0, 20) + "..." : book.autor;
+  // Melhor tratamento do título para legibilidade
+  let title = book.titulo;
+  if (title.length > 30) {
+    // Tenta quebrar em uma palavra adequada
+    const words = title.split(" ");
+    let shortTitle = "";
+    for (const word of words) {
+      if ((shortTitle + word).length <= 30) {
+        shortTitle += (shortTitle ? " " : "") + word;
+      } else {
+        break;
+      }
+    }
+    title = shortTitle + (shortTitle.length < book.titulo.length ? "..." : "");
+  }
+
+  // Melhor tratamento do autor
+  let author = book.autor;
+  if (author.length > 25) {
+    // Pega apenas o primeiro e último nome se for muito longo
+    const names = author.split(" ");
+    if (names.length > 2) {
+      author = `${names[0]} ${names[names.length - 1]}`;
+    } else {
+      author = author.substring(0, 22) + "...";
+    }
+  }
 
   return `
     <div class="book-spine" data-book-id="${book.id}">
