@@ -210,5 +210,123 @@ function updateBookCover(bookId, newCoverUrl) {
   }
 }
 
-// Inicialização quando a página carrega
-document.addEventListener("DOMContentLoaded", loadBooks);
+// FUNCIONALIDADE DO MENU RESPONSIVO
+document.addEventListener("DOMContentLoaded", function () {
+  // Carrega os livros
+  loadBooks();
+  // Inicializa o menu responsivo
+  initResponsiveMenu();
+});
+
+function initResponsiveMenu() {
+  const menuToggle = document.getElementById("menuToggle");
+  const sidebar = document.getElementById("sidebar");
+  const sidebarOverlay = document.getElementById("sidebarOverlay");
+  const sidebarClose = document.getElementById("sidebarClose");
+  const mainContent = document.getElementById("mainContent");
+
+  // Função para abrir o menu
+  function openSidebar() {
+    sidebar.classList.add("active");
+    menuToggle.classList.add("active");
+
+    // No mobile, mostra o overlay
+    if (window.innerWidth <= 768) {
+      sidebarOverlay.classList.add("active");
+      document.body.style.overflow = "hidden";
+    }
+  }
+  // Função para fechar o menu
+  function closeSidebar() {
+    sidebar.classList.remove("active");
+    menuToggle.classList.remove("active");
+    sidebarOverlay.classList.remove("active");
+    document.body.style.overflow = "";
+  }
+
+  // Função para alternar o menu
+  function toggleSidebar() {
+    if (window.innerWidth <= 768) {
+      // Mobile: comportamento de overlay
+      if (sidebar.classList.contains("active")) {
+        closeSidebar();
+      } else {
+        openSidebar();
+      }
+    } else {
+      // Desktop: comportamento de ocultar/mostrar
+      sidebar.classList.toggle("hidden");
+      mainContent.classList.toggle("sidebar-hidden");
+
+      // Salva a preferência no localStorage
+      const isHidden = sidebar.classList.contains("hidden");
+      localStorage.setItem("sidebarHidden", isHidden);
+    }
+  }
+
+  // Event listeners
+  menuToggle.addEventListener("click", toggleSidebar);
+  sidebarClose.addEventListener("click", closeSidebar);
+  sidebarOverlay.addEventListener("click", closeSidebar);
+
+  // Fecha o menu ao clicar em um link (mobile)
+  const sidebarLinks = sidebar.querySelectorAll("nav a");
+  sidebarLinks.forEach((link) => {
+    link.addEventListener("click", () => {
+      if (window.innerWidth <= 768) {
+        closeSidebar();
+      }
+    });
+  });
+
+  // Restaura a preferência do usuário no desktop
+  window.addEventListener("load", () => {
+    if (window.innerWidth > 768) {
+      const sidebarHidden = localStorage.getItem("sidebarHidden") === "true";
+      if (sidebarHidden) {
+        sidebar.classList.add("hidden");
+        mainContent.classList.add("sidebar-hidden");
+      }
+    }
+  });
+
+  // Ajusta o comportamento ao redimensionar a janela
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 768) {
+      // Desktop: remove classes de mobile e restaura preferência
+      sidebarOverlay.classList.remove("active");
+      document.body.style.overflow = "";
+
+      const sidebarHidden = localStorage.getItem("sidebarHidden") === "true";
+      if (sidebarHidden) {
+        sidebar.classList.add("hidden");
+        mainContent.classList.add("sidebar-hidden");
+      } else {
+        sidebar.classList.remove("hidden");
+        mainContent.classList.remove("sidebar-hidden");
+      }
+      sidebar.classList.remove("active");
+    } else {
+      // Mobile: remove classes de desktop
+      sidebar.classList.remove("hidden");
+      mainContent.classList.remove("sidebar-hidden");
+
+      if (!sidebar.classList.contains("active")) {
+        closeSidebar();
+      }
+    }
+  });
+
+  // Previne scroll do body quando o menu está aberto no mobile
+  document.addEventListener(
+    "touchmove",
+    function (e) {
+      if (sidebar.classList.contains("active") && window.innerWidth <= 768) {
+        if (!sidebar.contains(e.target)) {
+          e.preventDefault();
+        }
+      }
+    },
+    { passive: false }
+  );
+}

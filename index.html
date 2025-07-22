@@ -7,9 +7,24 @@
     <link rel="stylesheet" href="css/index.css" />
   </head>
   <body>
+    <!-- Botão do Menu Hambúrguer -->
+    <button class="menu-toggle" id="menuToggle" aria-label="Abrir/Fechar Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
     <!-- Menu Lateral -->
-    <aside class="sidebar">
-      <h2>Leitores Inoxidáveis</h2>
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Leitores Inoxidáveis</h2>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Fechar Menu">
+          ×
+        </button>
+      </div>
       <nav>
         <ul>
           <li><a href="index.html" class="active">Início</a></li>
@@ -32,7 +47,6 @@
         </p>
       </section>
 
-      <!-- Cards de estatíticas dos livros -->
       <section id="stats-cards">
         <!-- Estatísticas básicas dos livros: quantidade, gêneros, autores, etc. -->
       </section>

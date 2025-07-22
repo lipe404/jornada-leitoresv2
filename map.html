@@ -19,14 +19,30 @@
     />
   </head>
   <body>
-    <aside class="sidebar">
-      <h2>Leitores Inoxidáveis</h2>
+    <!-- Botão do Menu Hambúrguer -->
+    <button class="menu-toggle" id="menuToggle" aria-label="Abrir/Fechar Menu">
+      <span></span>
+      <span></span>
+      <span></span>
+    </button>
+
+    <!-- Overlay para mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+    <!-- Menu Lateral -->
+    <aside class="sidebar" id="sidebar">
+      <div class="sidebar-header">
+        <h2>Leitores Inoxidáveis</h2>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Fechar Menu">
+          ×
+        </button>
+      </div>
       <nav>
         <ul>
           <li><a href="index.html">Início</a></li>
           <li><a href="map.html" class="active">Mapa</a></li>
           <li><a href="timeline.html">Linha do Tempo</a></li>
-          <li><a href="search.html">Buscar</a></li>
+          <li><a href="search.html">Busca</a></li>
           <li><a href="quiz.html">Quiz</a></li>
         </ul>
       </nav>
