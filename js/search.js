@@ -1,4 +1,4 @@
-// ===== VARIÁVEIS GLOBAIS =====
+// VARIÁVEIS GLOBAIS
 let allBooks = [];
 let displayedBooks = [];
 let currentSearchSource = "local";
@@ -7,14 +7,14 @@ let currentPage = 0;
 const BOOKS_PER_PAGE = 15;
 const LOAD_MORE_COUNT = 10;
 
-// ===== INICIALIZAÇÃO =====
+// INICIALIZAÇÃO
 document.addEventListener("DOMContentLoaded", async () => {
   await loadLocalBooks();
   showDefaultBooks();
   setupEventListeners();
 });
 
-// ===== CARREGAR LIVROS LOCAIS =====
+// CARREGAR LIVROS LOCAIS
 async function loadLocalBooks() {
   try {
     const response = await fetch("data/books.json");
@@ -27,7 +27,7 @@ async function loadLocalBooks() {
   }
 }
 
-// ===== FUNÇÃO PARA BUSCAR CAPA DE LIVRO =====
+// FUNÇÃO PARA BUSCAR CAPA DE LIVRO
 async function fetchBookCover(titulo, autor) {
   const searchVariations = [
     `intitle:"${titulo}" inauthor:"${autor}"`,
@@ -76,7 +76,7 @@ async function fetchBookCover(titulo, autor) {
   return null;
 }
 
-// ===== FUNÇÃO PARA VERIFICAR SE PRECISA BUSCAR CAPA =====
+// FUNÇÃO PARA VERIFICAR SE PRECISA BUSCAR CAPA
 function needsCoverUpdate(book) {
   return (
     !book.imagem_capa ||
@@ -86,7 +86,7 @@ function needsCoverUpdate(book) {
   );
 }
 
-// ===== CONFIGURAR EVENT LISTENERS =====
+// CONFIGURAR EVENT LISTENERS
 function setupEventListeners() {
   const form = document.getElementById("searchForm");
   const input = document.getElementById("searchInput");
@@ -124,7 +124,7 @@ function setupEventListeners() {
   );
 }
 
-// ===== MOSTRAR LIVROS PADRÃO =====
+// MOSTRAR LIVROS PADRÃO
 async function showDefaultBooks() {
   displayedBooks = allBooks.slice(0, BOOKS_PER_PAGE);
   await renderBooksWithCovers(displayedBooks);
@@ -132,7 +132,7 @@ async function showDefaultBooks() {
   updateLoadMoreButton();
 }
 
-// ===== MANIPULAR BUSCA =====
+// MANIPULAR BUSCA
 function handleSearch(event) {
   event.preventDefault();
   const query = document.getElementById("searchInput").value.trim();
@@ -147,7 +147,7 @@ function handleSearch(event) {
   performSearch(query);
 }
 
-// ===== REALIZAR BUSCA =====
+// REALIZAR BUSCA
 async function performSearch(query) {
   showLoading();
 
@@ -171,7 +171,7 @@ async function performSearch(query) {
   }
 }
 
-// ===== BUSCAR LIVROS LOCAIS =====
+// BUSCAR LIVROS LOCAIS
 function searchLocalBooks(query) {
   const searchTerm = query.toLowerCase();
 
@@ -187,7 +187,7 @@ function searchLocalBooks(query) {
   });
 }
 
-// ===== BUSCAR LIVROS ONLINE =====
+// BUSCAR LIVROS ONLINE
 async function searchOnlineBooks(query) {
   const encodedQuery = encodeURIComponent(query);
   const url = `https://www.googleapis.com/books/v1/volumes?q=${encodedQuery}&maxResults=20&langRestrict=pt`;
@@ -229,7 +229,7 @@ async function searchOnlineBooks(query) {
   }
 }
 
-// ===== CARREGAR MAIS LIVROS =====
+// CARREGAR MAIS LIVROS
 async function loadMoreBooks() {
   const allResults = currentQuery
     ? currentSearchSource === "local"
@@ -246,7 +246,7 @@ async function loadMoreBooks() {
   updateLoadMoreButton(allResults);
 }
 
-// ===== RENDERIZAR LIVROS COM CAPAS =====
+// RENDERIZAR LIVROS COM CAPAS
 async function renderBooksWithCovers(books) {
   const resultsDiv = document.getElementById("searchResults");
 
@@ -312,7 +312,7 @@ async function renderBooksWithCovers(books) {
   }
 }
 
-// ===== CRIAR LOMBADA DO LIVRO =====
+// CRIAR LOMBADA DO LIVRO
 function createBookSpine(book) {
   const title =
     book.titulo.length > 25
@@ -332,7 +332,7 @@ function createBookSpine(book) {
   `;
 }
 
-// ===== ABRIR MODAL DO LIVRO =====
+// ABRIR MODAL DO LIVRO
 function openBookModal(book) {
   const modal = document.getElementById("bookModal");
 
@@ -366,14 +366,14 @@ function openBookModal(book) {
   document.body.style.overflow = "hidden";
 }
 
-// ===== FECHAR MODAL =====
+// FECHAR MODAL
 function closeModal() {
   const modal = document.getElementById("bookModal");
   modal.style.display = "none";
   document.body.style.overflow = "auto";
 }
 
-// ===== ATUALIZAR INFO DOS RESULTADOS =====
+// ATUALIZAR INFO DOS RESULTADOS
 function updateResultsInfo(count, searchInfo) {
   const resultsCount = document.getElementById("resultsCount");
   resultsCount.textContent = `${count} livro${
@@ -381,7 +381,7 @@ function updateResultsInfo(count, searchInfo) {
   } encontrado${count !== 1 ? "s" : ""} para ${searchInfo}`;
 }
 
-// ===== ATUALIZAR BOTÃO "VER MAIS" =====
+// ATUALIZAR BOTÃO "VER MAIS"
 function updateLoadMoreButton(allResults = null) {
   const loadMoreBtn = document.getElementById("loadMoreBtn");
   const totalResults = allResults ? allResults.length : allBooks.length;
@@ -397,7 +397,7 @@ function updateLoadMoreButton(allResults = null) {
   }
 }
 
-// ===== MOSTRAR LOADING =====
+// MOSTRAR LOADING
 function showLoading() {
   document.getElementById("searchResults").innerHTML = `
     <div class="loading">
@@ -407,7 +407,7 @@ function showLoading() {
   `;
 }
 
-// ===== MOSTRAR ERRO =====
+// MOSTRAR ERRO
 function showError(message) {
   document.getElementById("searchResults").innerHTML = `
     <div class="no-results">
@@ -417,7 +417,7 @@ function showError(message) {
   `;
 }
 
-// ===== FUNÇÃO DEBOUNCE =====
+// FUNÇÃO DEBOUNCE
 function debounce(func, wait) {
   let timeout;
   return function executedFunction(...args) {

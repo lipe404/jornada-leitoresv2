@@ -162,11 +162,22 @@ function displayBooks(books) {
     .map(
       (book) => `
     <div class="book-card" data-book-id="${book.id}">
-      <div class="book-cover-background" style="background-image: url('${
-        book.imagem_capa || "img/default-cover.png"
-      }')">
-        ${needsCoverUpdate(book) ? '<div class="loading-overlay">🔍</div>' : ""}
-        <div class="book-info-overlay">
+      <div class="book-container">
+        <!-- Frente do livro (capa) -->
+        <div class="book-front">
+          <div class="book-cover-background" style="background-image: url('${
+            book.imagem_capa || "img/default-cover.png"
+          }')">
+            ${
+              needsCoverUpdate(book)
+                ? '<div class="loading-overlay">🔍</div>'
+                : ""
+            }
+          </div>
+        </div>
+
+        <!-- Verso do livro (informações) -->
+        <div class="book-back">
           <div class="book-info-content">
             <h4 class="book-title">${book.titulo}</h4>
             <span class="book-author">${book.autor}</span>

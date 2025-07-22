@@ -1,6 +1,6 @@
-/* ===== LAYOUT PRINCIPAL ===== */
+/* LAYOUT PRINCIPAL */
 main {
-  margin-left: 270px;
+  margin-left: 240px;
   padding: 40px;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
   min-height: 100vh;
@@ -19,7 +19,7 @@ main {
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
 }
 
-/* ===== CONTROLES DE BUSCA ===== */
+/* CONTROLES DE BUSCA */
 .search-controls {
   background: white;
   padding: 24px;
@@ -101,7 +101,7 @@ main {
   color: #333;
 }
 
-/* ===== INFO DOS RESULTADOS ===== */
+/* INFO DOS RESULTADOS */
 .results-info {
   display: flex;
   justify-content: space-between;
@@ -136,7 +136,7 @@ main {
   box-shadow: 0 6px 20px rgba(61, 90, 254, 0.4);
 }
 
-/* ===== ESTANTE DE LIVROS ===== */
+/* ESTANTE DE LIVROS */
 .search-results {
   background: linear-gradient(180deg, #8b4513 0%, #a0522d 100%);
   border-radius: 20px;
@@ -242,7 +242,7 @@ main {
 }
 
 .book-spine-title {
-  font-size: 0.75em;
+  font-size: 0.85em;
   font-weight: 700;
   line-height: 1.2;
   writing-mode: vertical-rl;
@@ -262,6 +262,7 @@ main {
   text-orientation: mixed;
   text-align: center;
   margin-top: auto;
+  padding-bottom: 80%;
 }
 
 .book-spine-decoration {
@@ -286,7 +287,7 @@ main {
   border-radius: 1px;
 }
 
-/* ===== MODAL DO LIVRO COM ANIMAÇÃO ===== */
+/* MODAL DO LIVRO COM ANIMAÇÃO */
 .modal {
   display: none;
   position: fixed;
@@ -477,7 +478,7 @@ main {
 
 .book-description {
   margin-top: 30px;
-  padding-top: 30px;
+  padding-top: 0px;
   border-top: 3px solid #e9ecef;
 }
 
