@@ -156,7 +156,7 @@ async function showLatestBooksWithCovers(books) {
   }
 }
 
-// Função para exibir os livros na tela
+// Função para exibir os livros na tela - VERSÃO COM ROTAÇÃO 3D CORRIGIDA
 function displayBooks(books) {
   document.getElementById("book-list").innerHTML = books
     .map(
@@ -183,7 +183,7 @@ function displayBooks(books) {
             <span class="book-author">${book.autor}</span>
             <p class="book-description">${book.descricao.substring(
               0,
-              120
+              150
             )}...</p>
             <div class="book-genres">
               ${book.genero

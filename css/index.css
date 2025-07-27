@@ -4,10 +4,6 @@ body {
   font-family: "Segoe UI", Arial, sans-serif;
   background: #f9f9f9;
   transition: margin-left 0.3s ease;
-  -webkit-transition: margin-left 0.3s ease;
-  -moz-transition: margin-left 0.3s ease;
-  -ms-transition: margin-left 0.3s ease;
-  -o-transition: margin-left 0.3s ease;
 }
 
 /* BOTÃO DO MENU HAMBURGUER */
@@ -148,7 +144,6 @@ body {
   background: rgba(255, 255, 255, 0.1);
 }
 
-/* ESTADOS DO SIDEBAR */
 .sidebar.hidden {
   transform: translateX(-100%);
 }
@@ -267,13 +262,18 @@ body {
 .book-card {
   width: 220px;
   height: 320px;
-  perspective: 1000px;
   cursor: pointer;
   transition: transform 0.3s ease;
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
 }
 
 .book-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.25);
+  z-index: 10;
 }
 
 .book-container {
@@ -302,20 +302,14 @@ body {
 }
 
 .book-front {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  border-radius: 16px;
+  overflow: hidden;
   z-index: 2;
 }
-
-.book-back {
-  transform: rotateY(180deg);
-  background: linear-gradient(135deg, #3d5afe 0%, #1de9b6 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  box-sizing: border-box;
-}
-
-.book-front,
 .book-back {
   position: absolute;
   width: 100%;
@@ -323,10 +317,20 @@ body {
   backface-visibility: hidden;
   border-radius: 16px;
   overflow: hidden;
+  transform: rotateY(180deg); /* Pré-rotacionado para aparecer no verso */
+  background: linear-gradient(
+    135deg,
+    rgba(61, 90, 254, 0.95) 0%,
+    rgba(29, 233, 182, 0.95) 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  box-sizing: border-box;
 }
 
-/* OVERLAY DE INFORMAÇÕES */
-.book-info-overlay {
+/*.book-info-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -334,8 +338,8 @@ body {
   bottom: 0;
   background: linear-gradient(
     135deg,
-    rgba(61, 90, 254, 1) 0%,
-    rgba(29, 233, 182, 1) 100%
+    rgba(61, 90, 254, 0.95) 0%,
+    rgba(29, 233, 182, 0.95) 100%
   );
   display: flex;
   align-items: center;
@@ -346,17 +350,16 @@ body {
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   padding: 20px;
   box-sizing: border-box;
-  z-index: 2;
-}
+  z-index: 5;
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}*/
 
-.book-card:hover .book-info-overlay {
+.book-card:hover {
   opacity: 1;
   visibility: visible;
   transform: translateY(0);
-  -webkit-transform: translateY(0);
-  -moz-transform: translateY(0);
-  -ms-transform: translateY(0);
-  -o-transform: translateY(0);
 }
 
 .book-info-content {
@@ -365,7 +368,7 @@ body {
   width: 100%;
   opacity: 0;
   transform: scale(0.8) translateY(20px);
-  transition: all 0.4s ease 0.2s;
+  transition: all 0.6s ease 0.3s; /* Delay para aparecer após a rotação */
 }
 
 .book-card:hover .book-info-content {
@@ -396,7 +399,7 @@ body {
   line-height: 1.4;
   margin: 0 0 16px 0;
   color: rgba(255, 255, 255, 0.95);
-  max-height: 100px;
+  max-height: 80px;
   overflow-y: auto;
   padding-right: 5px;
   scrollbar-width: thin;
@@ -449,6 +452,7 @@ body {
   font-size: 18px;
   animation: pulse 1.5s infinite;
   z-index: 10;
+  -webkit-backdrop-filter: blur(5px);
   backdrop-filter: blur(5px);
   border: 2px solid rgba(255, 255, 255, 0.3);
 }
@@ -517,15 +521,16 @@ body {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   border: 1px solid rgba(255, 255, 255, 0.3);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
 .collection-tag:first-child {
-  background: rgba(61, 90, 254, 0.3);
+  background: rgba(61, 90, 254, 0.4);
 }
 
 .collection-tag:nth-child(2) {
-  background: rgba(29, 233, 182, 0.3);
+  background: rgba(29, 233, 182, 0.4);
 }
 
 /* ANIMAÇÕES */
