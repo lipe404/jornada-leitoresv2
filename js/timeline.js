@@ -1,15 +1,70 @@
-// VARIÁVEIS GLOBAIS
+// ===== VARIÁVEIS GLOBAIS =====
 let allBooks = [];
+let currentCentury = null;
+let backgroundEnabled = true;
+let musicEnabled = true;
+let effectsEnabled = true;
+let currentAudio = null;
 
-// CARREGAR E ORDENAR LIVROS
+// ===== DADOS HISTÓRICOS POR SÉCULO =====
+const historicalData = {
+  "Século XVI": {
+    background:
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=1080&fit=crop",
+    title: "Renascimento e Grandes Navegações",
+    description:
+      "Era de descobrimentos, arte renascentista e expansão marítima. Shakespeare revoluciona o teatro enquanto exploradores descobrem novos mundos.",
+    music: "https://www.soundjay.com/misc/sounds/classical-music-1.mp3", // Placeholder
+  },
+  "Século XVII": {
+    background:
+      "https://images.unsplash.com/photo-1541961017774-22349e4a1262?w=1920&h=1080&fit=crop",
+    title: "Barroco e Revolução Científica",
+    description:
+      "Período do Barroco, com Cervantes criando Dom Quixote. Galileu revoluciona a astronomia e a ciência moderna nasce.",
+    music: "https://www.soundjay.com/misc/sounds/classical-music-2.mp3",
+  },
+  "Século XVIII": {
+    background:
+      "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=1920&h=1080&fit=crop",
+    title: "Iluminismo e Revoluções",
+    description:
+      "Era das Luzes, Revolução Francesa e Americana. A razão e a ciência transformam a sociedade e a literatura.",
+    music: "https://www.soundjay.com/misc/sounds/classical-music-3.mp3",
+  },
+  "Século XIX": {
+    background:
+      "https://images.unsplash.com/photo-1513475382585-d06e58bcb0e0?w=1920&h=1080&fit=crop",
+    title: "Romantismo e Revolução Industrial",
+    description:
+      "Era do Romantismo, máquinas a vapor e grandes transformações sociais. Literatura explora emoções e a natureza humana.",
+    music: "https://www.soundjay.com/misc/sounds/classical-music-4.mp3",
+  },
+  "Século XX": {
+    background:
+      "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=1920&h=1080&fit=crop",
+    title: "Modernismo e Grandes Guerras",
+    description:
+      "Século das duas grandes guerras, modernismo literário e transformações tecnológicas que mudaram o mundo para sempre.",
+    music: "https://www.soundjay.com/misc/sounds/jazz-music-1.mp3",
+  },
+  "Século XXI": {
+    background:
+      "https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=1920&h=1080&fit=crop",
+    title: "Era Digital e Globalização",
+    description:
+      "Internet, globalização e literatura contemporânea. Novos formatos narrativos e democratização do acesso à cultura.",
+    music: "https://www.soundjay.com/misc/sounds/electronic-music-1.mp3",
+  },
+};
+
+// Carregar e organizar livros
 async function carregarLivros() {
   try {
     const response = await fetch("data/books.json");
     if (!response.ok) throw new Error("Erro ao carregar livros");
 
     const livros = await response.json();
-
-    // Filtrar livros com ano de publicação válido e ordenar cronologicamente
     const livrosValidos = livros.filter(
       (livro) =>
         livro.ano_publicacao &&
@@ -25,13 +80,236 @@ async function carregarLivros() {
     });
   } catch (error) {
     console.error("Erro ao carregar livros:", error);
-    document.getElementById("timeline").innerHTML =
-      "<p style='text-align: center; color: #666; font-size: 1.2em; padding: 40px;'>Não foi possível carregar os dados da linha do tempo.</p>";
     return [];
   }
 }
 
-// CRIAR EVENTO DA TIMELINE
+// Determinar século do livro
+function determinarSeculo(ano) {
+  if (ano < 1600) return "Século XVI";
+  if (ano < 1700) return "Século XVII";
+  if (ano < 1800) return "Século XVIII";
+  if (ano < 1900) return "Século XIX";
+  if (ano < 2000) return "Século XX";
+  return "Século XXI";
+}
+
+// Criar sumário de séculos
+function criarSumarioSeculos() {
+  const seculos = {};
+
+  allBooks.forEach((book) => {
+    const seculo = determinarSeculo(book.ano_publicacao);
+    if (!seculos[seculo]) {
+      seculos[seculo] = [];
+    }
+    seculos[seculo].push(book);
+  });
+
+  const centuryList = document.getElementById("centuryList");
+  centuryList.innerHTML = "";
+
+  Object.keys(seculos).forEach((seculo) => {
+    const centuryItem = document.createElement("div");
+    centuryItem.className = "century-item";
+    centuryItem.innerHTML = `
+      <div class="century-name">${seculo}</div>
+      <div class="century-count">${seculos[seculo].length} livros</div>
+    `;
+
+    centuryItem.addEventListener("click", () => {
+      navegarParaSeculo(seculo);
+    });
+
+    centuryList.appendChild(centuryItem);
+  });
+}
+
+// Navegar para século específico
+function navegarParaSeculo(seculo) {
+  // Atualizar visual do sumário
+  document.querySelectorAll(".century-item").forEach((item) => {
+    item.classList.remove("active");
+  });
+  event.target.closest(".century-item").classList.add("active");
+
+  // Encontrar primeiro livro do século
+  const primeiroLivro = allBooks.find(
+    (book) => determinarSeculo(book.ano_publicacao) === seculo
+  );
+
+  if (primeiroLivro) {
+    const elemento = document.querySelector(
+      `[data-book-id="${primeiroLivro.id}"]`
+    );
+    if (elemento) {
+      elemento.scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+
+      // Atualizar contexto histórico
+      atualizarContextoHistorico(seculo);
+    }
+  }
+}
+
+// Atualizar background e contexto histórico
+function atualizarContextoHistorico(seculo) {
+  if (!backgroundEnabled) return;
+
+  currentCentury = seculo;
+  const data = historicalData[seculo];
+
+  if (data) {
+    // Atualizar background
+    const bgElement = document.getElementById("historicalBackground");
+    bgElement.style.backgroundImage = `url('${data.background}')`;
+
+    // Atualizar conteúdo
+    document.getElementById("historicalTitle").textContent = data.title;
+    document.getElementById("historicalDescription").textContent =
+      data.description;
+
+    // Mostrar conteúdo com animação
+    const content = document.querySelector(".historical-content");
+    content.classList.add("visible");
+
+    // Atualizar música
+    if (musicEnabled) {
+      atualizarMusica(seculo);
+    }
+  }
+}
+
+// Sistema de música por época
+function atualizarMusica(seculo) {
+  const data = historicalData[seculo];
+  if (!data || !data.music) return;
+
+  const audioPlayer = document.getElementById("audioPlayer");
+  const currentSong = document.getElementById("currentSong");
+
+  // Parar música atual
+  if (currentAudio) {
+    currentAudio.pause();
+  }
+
+  // Simular mudança de música (em produção, usar arquivos reais)
+  currentSong.textContent = `Música do ${seculo}`;
+
+  // Simular progresso da música
+  let progress = 0;
+  const progressBar = document.getElementById("musicProgressBar");
+
+  const progressInterval = setInterval(() => {
+    progress += 1;
+    progressBar.style.width = `${progress}%`;
+
+    if (progress >= 100) {
+      progress = 0;
+    }
+  }, 200);
+
+  // Armazenar referência para limpeza
+  currentAudio = {
+    pause: () => clearInterval(progressInterval),
+    interval: progressInterval,
+  };
+}
+
+// Detectar livro centralizado na tela
+function detectarLivroCentralizado() {
+  const eventos = document.querySelectorAll(".timeline-event");
+  const centerY = window.innerHeight / 2;
+  let livroMaisProximo = null;
+  let menorDistancia = Infinity;
+
+  eventos.forEach((evento) => {
+    const rect = evento.getBoundingClientRect();
+    const eventoCenter = rect.top + rect.height / 2;
+    const distancia = Math.abs(eventoCenter - centerY);
+
+    if (
+      distancia < menorDistancia &&
+      rect.top < centerY &&
+      rect.bottom > centerY
+    ) {
+      menorDistancia = distancia;
+      livroMaisProximo = evento;
+    }
+  });
+
+  if (livroMaisProximo) {
+    const bookId =
+      livroMaisProximo.querySelector(".event-content").dataset.bookId;
+    const livro = allBooks.find((b) => b.id == bookId);
+
+    if (livro) {
+      const seculo = determinarSeculo(livro.ano_publicacao);
+      if (seculo !== currentCentury) {
+        atualizarContextoHistorico(seculo);
+      }
+    }
+  }
+}
+
+// Configurar controles de imersão
+function configurarControlesImersao() {
+  document.getElementById("toggleBackground").addEventListener("click", (e) => {
+    backgroundEnabled = !backgroundEnabled;
+    e.target.classList.toggle("active", backgroundEnabled);
+
+    const bg = document.getElementById("historicalBackground");
+    bg.style.opacity = backgroundEnabled ? "0.3" : "0";
+
+    const content = document.querySelector(".historical-content");
+    content.classList.toggle("visible", backgroundEnabled);
+  });
+
+  document.getElementById("toggleMusic").addEventListener("click", (e) => {
+    musicEnabled = !musicEnabled;
+    e.target.classList.toggle("active", musicEnabled);
+
+    const player = document.getElementById("musicPlayer");
+    player.style.display = musicEnabled ? "block" : "none";
+
+    if (!musicEnabled && currentAudio) {
+      currentAudio.pause();
+    }
+  });
+
+  document.getElementById("toggleEffects").addEventListener("click", (e) => {
+    effectsEnabled = !effectsEnabled;
+    e.target.classList.toggle("active", effectsEnabled);
+
+    document.querySelectorAll(".timeline-event").forEach((evento) => {
+      evento.classList.toggle("effects-enabled", effectsEnabled);
+    });
+  });
+}
+
+// Configurar player de música
+function configurarPlayerMusica() {
+  document.getElementById("musicToggle").addEventListener("click", () => {
+    if (currentAudio) {
+      // Toggle play/pause (simulado)
+      const btn = document.getElementById("musicToggle");
+      btn.textContent = btn.textContent === "🎵" ? "⏸️" : "🎵";
+    }
+  });
+
+  document.getElementById("musicVolume").addEventListener("click", () => {
+    const btn = document.getElementById("musicVolume");
+    if (btn.textContent === "🔊") {
+      btn.textContent = "🔇";
+    } else {
+      btn.textContent = "🔊";
+    }
+  });
+}
+
+// Função existente atualizada para incluir efeitos
 function criarEventoTimeline(livro, index) {
   const genres = Array.isArray(livro.genero)
     ? livro.genero.join(", ")
@@ -43,7 +321,9 @@ function criarEventoTimeline(livro, index) {
     : "";
 
   return `
-    <div class="timeline-event" style="animation-delay: ${index * 0.1}s">
+    <div class="timeline-event ${
+      effectsEnabled ? "effects-enabled" : ""
+    }" style="animation-delay: ${index * 0.1}s">
       <div class="timeline-year">${livro.ano_publicacao}</div>
       <div class="timeline-dot"></div>
       <div class="event-content"
@@ -211,17 +491,18 @@ async function atualizarCapasBackground() {
   }
 }
 
-// INICIALIZAÇÃO
+// ===== INICIALIZAÇÃO =====
 document.addEventListener("DOMContentLoaded", async () => {
-  console.log("Carregando Timeline Literária...");
+  console.log("🎭 Carregando Timeline Imersiva...");
 
   // Carregar livros
   allBooks = await carregarLivros();
   if (!allBooks.length) return;
 
-  console.log(
-    `📚 ${allBooks.length} livros carregados e ordenados cronologicamente`
-  );
+  // Criar interface
+  criarSumarioSeculos();
+  configurarControlesImersao();
+  configurarPlayerMusica();
 
   // Renderizar timeline
   const timelineDiv = document.getElementById("timeline");
@@ -229,7 +510,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     .map((livro, index) => criarEventoTimeline(livro, index))
     .join("");
 
-  // Configurar eventos do modal
+  // Configurar eventos existentes...
   document.body.addEventListener("click", (e) => {
     if (e.target.closest(".event-content")) {
       const el = e.target.closest(".event-content");
@@ -246,7 +527,6 @@ document.addEventListener("DOMContentLoaded", async () => {
       });
     }
 
-    // Fechar modal
     if (
       e.target.matches(".modal-bg") ||
       e.target.matches(".close-btn") ||
@@ -256,23 +536,25 @@ document.addEventListener("DOMContentLoaded", async () => {
     }
   });
 
-  // Inicializar botão voltar ao topo
-  initBackToTop();
+  // Detectar scroll para atualizar contexto
+  let scrollTimeout;
+  window.addEventListener("scroll", () => {
+    clearTimeout(scrollTimeout);
+    scrollTimeout = setTimeout(detectarLivroCentralizado, 100);
+  });
 
-  // Fechar modal com ESC
+  // Inicializar com primeiro século
+  const primeiroSeculo = determinarSeculo(allBooks[0].ano_publicacao);
+  atualizarContextoHistorico(primeiroSeculo);
+
+  // Outras inicializações existentes...
+  initBackToTop();
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape") fecharModal();
   });
-
-  // Iniciar animações de scroll
   animarEventosScroll();
 
-  // Buscar capas melhores em background
-  setTimeout(() => {
-    atualizarCapasBackground();
-  }, 2000);
-
-  console.log("✅ Timeline carregada com sucesso!");
+  console.log("✅ Timeline Imersiva carregada com sucesso!");
 });
 
 // Função para mostrar/ocultar o botão baseado no scroll

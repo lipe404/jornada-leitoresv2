@@ -23,7 +23,8 @@
     <aside class="sidebar" id="sidebar">
       <div class="sidebar-header">
         <h2>Leitores Inoxidáveis</h2>
-        <button class="sidebar-close" id="sidebarClose" aria-label="Fechar Menu">
+        <button class="sidebar-close" id="sidebarClose"
+          aria-label="Fechar Menu">
           ×
         </button>
       </div>
@@ -38,9 +39,55 @@
       </nav>
     </aside>
 
+    <!-- NOVO: Background histórico animado -->
+    <div id="historicalBackground" class="historical-background">
+      <div class="historical-overlay"></div>
+      <div class="historical-content">
+        <h2 id="historicalTitle"></h2>
+        <p id="historicalDescription"></p>
+      </div>
+    </div>
+
+    <!-- NOVO: Player de música -->
+    <div id="musicPlayer" class="music-player">
+      <div class="music-controls">
+        <button id="musicToggle" class="music-btn">🎵</button>
+        <div class="music-info">
+          <span id="currentSong">Música da época</span>
+          <div class="music-progress">
+            <div id="musicProgressBar" class="progress-bar"></div>
+          </div>
+        </div>
+        <button id="musicVolume" class="music-btn">🔊</button>
+      </div>
+      <audio id="audioPlayer" loop></audio>
+    </div>
+
     <main>
+      <!-- NOVO: Sumário de séculos -->
+      <aside id="centurySummary" class="century-summary">
+        <h3>📚 Navegação por Séculos</h3>
+        <div id="centuryList" class="century-list">
+          <!-- Preenchido dinamicamente -->
+        </div>
+      </aside>
+
       <section class="timeline-section">
         <h1>Linha do Tempo Literária</h1>
+
+        <!-- NOVO: Controles de imersão -->
+        <div class="immersion-controls">
+          <button id="toggleBackground" class="immersion-btn active">
+            🖼️ Fundo Histórico
+          </button>
+          <button id="toggleMusic" class="immersion-btn active">
+            🎵 Música da Época
+          </button>
+          <button id="toggleEffects" class="immersion-btn active">
+            ✨ Efeitos Visuais
+          </button>
+        </div>
+
         <div id="timeline">
           <!-- Linhas são carregadas pelo JS -->
         </div>
@@ -66,9 +113,12 @@
     </div>
 
     <!-- Botão Voltar ao Topo -->
-    <button id="backToTop" class="back-to-top" aria-label="Voltar ao topo" title="Voltar ao topo">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d="M12 19V5M5 12L12 5L19 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    <button id="backToTop" class="back-to-top" aria-label="Voltar ao topo"
+      title="Voltar ao topo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none"
+        xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 19V5M5 12L12 5L19 12" stroke="currentColor"
+          stroke-width="2" stroke-linecap="round" stroke-linejoin="round" />
       </svg>
       <span class="back-to-top-text">Topo</span>
     </button>
